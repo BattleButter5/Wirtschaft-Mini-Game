@@ -1,5 +1,6 @@
 # PyCharm
 .idea/
+git rm -r --cached idea
 
 # Python
 __pycache__/
