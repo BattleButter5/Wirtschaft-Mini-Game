@@ -5,9 +5,10 @@ pygame.font.init()
 
 WIDTH, HEIGHT = 1000, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Space Dodge")
+pygame.display.set_caption("Tarif Game")
 
 BG = pygame.transform.scale(pygame.image.load("bg.jpeg"), (WIDTH, HEIGHT))
+FONT = pygame.font.SysFont("comicsans", 30)
 
 PLAYER_WIDTH = 40
 PLAYER_HEIGHT = 60
@@ -19,9 +20,13 @@ STAR_WIDTH = 10
 STAR_HEIGHT = 20
 STAR_VEL = 3
 
+MENU = "menu"
+GAME1 = "game1"
+GAME2 = "game2"
 
-FONT = pygame.font.SysFont("comicsans", 30)
 
+scenario_button1 = pygame.Rect(WIDTH // 2 - 150, 300, 300, 60)
+scenario_button2 = pygame.Rect(WIDTH // 2 - 150, 400, 300, 60)
 
 def draw(player, elapsed_time, stars, trump):
     WIN.blit(BG, (0, 0))
@@ -37,13 +42,30 @@ def draw(player, elapsed_time, stars, trump):
 
 
     pygame.display.update()
+def draw_menu():
+    WIN.blit(BG, (0, 0))
 
+    title = FONT.render("Choose Your Scenario", True, "white")
+    WIN.blit(title, (WIDTH//2 - title.get_width()//2, 200))
+
+    pygame.draw.rect(WIN, "red", scenario_button1)
+    pygame.draw.rect(WIN, "blue", scenario_button2)
+
+    text1 = FONT.render("Tariffs hurt Consumers", True, "white")
+    text2 = FONT.render("Tariffs hurt Workers", True, "white")
+
+    WIN.blit(text1, (scenario_button1.x + 20, scenario_button1.y + 15))
+    WIN.blit(text2, (scenario_button2.x + 20, scenario_button2.y + 15))
+
+    pygame.display.update()
 
 def main():
     run = True
-
+    game_state = MENU
     player = pygame.Rect(200, HEIGHT - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT)
     trump = pygame.Rect(200, 5, TRUMP_WIDTH, TRUMP_HEIGHT )
+
+
     TRUMP_VEL = random.randint(-5, 5)
 
     player_vel_y = 0  # vertical speed
@@ -67,6 +89,30 @@ def main():
         elapsed_time = time.time() - start_time
         direction_timer += clock.get_time()
 
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                break
+
+            if game_state == MENU:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if scenario_button1.collidepoint(event.pos):
+                        game_state = GAME1
+                    if scenario_button2.collidepoint(event.pos):
+                        game_state = GAME2
+
+        if game_state == MENU:
+            draw_menu()
+            continue
+
+        elif game_state == GAME1:
+            # run scenario 1 logic
+            draw(player, elapsed_time, stars, trump)
+
+        elif game_state == GAME2:
+            # run scenario 2 logic
+            draw(player, elapsed_time, stars, trump)
+
         if direction_timer > 1000:  # every 2 seconds
             TRUMP_VEL = random.choice([-7, -5, 5, 7])
             direction_timer = 0
@@ -75,7 +121,6 @@ def main():
 
         if trump.x <= 0 or trump.x + TRUMP_WIDTH >= WIDTH:
                 TRUMP_VEL *= -1
-
 
 
 
@@ -90,10 +135,7 @@ def main():
             star_add_increment = max(200, star_add_increment - 50)
             star_count = 0
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-                break
+
 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] and player.x - PLAYER_VEL >= 0:
@@ -128,7 +170,6 @@ def main():
             pygame.time.delay(4000)
             break
 
-        draw(player, elapsed_time, stars, trump)
 
     pygame.quit()
 
