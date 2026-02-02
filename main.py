@@ -5,54 +5,67 @@ pygame.font.init()
 
 WIDTH, HEIGHT = 1000, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Tarif Game")
-
-BG = pygame.transform.scale(pygame.image.load("bg.jpeg"), (WIDTH, HEIGHT))
-FONT = pygame.font.SysFont("comicsans", 30)
-
-PLAYER_WIDTH = 40
-PLAYER_HEIGHT = 60
-TRUMP_WIDTH = 50
-TRUMP_HEIGHT = 70
+PLAYER_WIDTH = 60
+PLAYER_HEIGHT = 80
+TRUMP_WIDTH = 70
+TRUMP_HEIGHT = 90
 
 PLAYER_VEL = 5
-STAR_WIDTH = 10
-STAR_HEIGHT = 20
-STAR_VEL = 3
+TARIFF_WIDTH = 30
+TARIFF_HEIGHT = 30
+TARIFF_VEL = 4
+
+pygame.display.set_caption("Tariff Game")
+
+BG = pygame.transform.scale(pygame.image.load("bg1.png"), (WIDTH, HEIGHT))
+FONT_TITLE = pygame.font.SysFont("Times New Roman", 40, italic=True)
+FONT_TITLE.set_underline(True)
+FONT_BUTTONS = pygame.font.SysFont("Times New Roman", 30)
+PLAYER_IMG = pygame.image.load("player.png")
+TRUMP_IMG = pygame.image.load("trump.png")
+TARIFF_IMG = pygame.image.load("tariff.png")
+PLAYER_IMG = pygame.transform.scale(PLAYER_IMG, (PLAYER_WIDTH, PLAYER_HEIGHT))
+TRUMP_IMG = pygame.transform.scale(TRUMP_IMG, (TRUMP_WIDTH, TRUMP_HEIGHT))
+TARIFF_IMG = pygame.transform.scale(TARIFF_IMG, (TARIFF_WIDTH, TARIFF_HEIGHT))
+PLAYER_MASK = pygame.mask.from_surface(PLAYER_IMG)
+TARIFF_MASK = pygame.mask.from_surface(TARIFF_IMG)
 
 MENU = "menu"
 GAME1 = "game1"
 GAME2 = "game2"
 
+title_button = pygame.Rect(WIDTH // 2 - 200, 200, 400,60)
+scenario_button1 = pygame.Rect(WIDTH // 2 - 300, 350, 650, 60)
+scenario_button2 = pygame.Rect(WIDTH // 2 - 300, 450, 650, 60)
 
-scenario_button1 = pygame.Rect(WIDTH // 2 - 150, 300, 300, 60)
-scenario_button2 = pygame.Rect(WIDTH // 2 - 150, 400, 300, 60)
-
-def draw(player, elapsed_time, stars, trump):
+def draw(player, elapsed_time, tariffs, trump):
     WIN.blit(BG, (0, 0))
 
-    time_text = FONT.render(f"Time: {round(elapsed_time)}s", 1, "white")
+    time_text = FONT_BUTTONS.render(f"Time: {round(elapsed_time)}s", 1, "white")
     WIN.blit(time_text, (10, 10))
 
-    pygame.draw.rect(WIN, "red", player)
-    pygame.draw.rect(WIN, "blue", trump)
+    #pygame.draw.rect(WIN, "red", player)
+    WIN.blit(PLAYER_IMG, (player.x, player.y))
+    #pygame.draw.rect(WIN, "blue", trump)
+    WIN.blit(TRUMP_IMG, (trump.x, trump.y))
 
-    for star in stars:
-        pygame.draw.rect(WIN, "white", star)
+    for tariff in tariffs:
+        WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
 
 
     pygame.display.update()
 def draw_menu():
     WIN.blit(BG, (0, 0))
 
-    title = FONT.render("Choose Your Scenario", True, "white")
+    title = FONT_TITLE.render("Wähle dein Szenario", True, "black")
+    #pygame.draw.rect(WIN, "black",title_button)
     WIN.blit(title, (WIDTH//2 - title.get_width()//2, 200))
 
     pygame.draw.rect(WIN, "red", scenario_button1)
     pygame.draw.rect(WIN, "blue", scenario_button2)
 
-    text1 = FONT.render("Tariffs hurt Consumers", True, "white")
-    text2 = FONT.render("Tariffs hurt Workers", True, "white")
+    text1 = FONT_BUTTONS.render("Große Einschränkungen des weltweiten Handels", True, "white")
+    text2 = FONT_BUTTONS .render("Weitgehend reibungsloser weltweiter Handel", True, "white")
 
     WIN.blit(text1, (scenario_button1.x + 20, scenario_button1.y + 15))
     WIN.blit(text2, (scenario_button2.x + 20, scenario_button2.y + 15))
@@ -78,14 +91,14 @@ def main():
     elapsed_time = 0
     direction_timer = 0
 
-    star_add_increment = 2000
-    star_count = 0
+    tariff_add_increment = 2000
+    tariff_count = 0
 
-    stars = []
+    tariffs = []
     hit = False
 
     while run:
-        star_count += clock.tick(60)
+        tariff_count += clock.tick(60)
         elapsed_time = time.time() - start_time
         direction_timer += clock.get_time()
 
@@ -107,11 +120,11 @@ def main():
 
         elif game_state == GAME1:
             # run scenario 1 logic
-            draw(player, elapsed_time, stars, trump)
+            draw(player, elapsed_time, tariffs, trump)
 
         elif game_state == GAME2:
             # run scenario 2 logic
-            draw(player, elapsed_time, stars, trump)
+            draw(player, elapsed_time, tariffs, trump)
 
         if direction_timer > 1000:  # every 2 seconds
             TRUMP_VEL = random.choice([-7, -5, 5, 7])
@@ -124,16 +137,16 @@ def main():
 
 
 
-        if star_count > star_add_increment:
+        if tariff_count > tariff_add_increment:
             for _ in range(3):
-                star_x = random.randint(0, WIDTH - STAR_WIDTH)
-                star_y = TRUMP_HEIGHT
-                star = pygame.Rect(star_x, star_y,
-                                   STAR_WIDTH, STAR_HEIGHT)
-                stars.append(star)
+                tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH)
+                tariff_y = TRUMP_HEIGHT
+                tariff = pygame.Rect(tariff_x, tariff_y,
+                                   TARIFF_WIDTH, TARIFF_HEIGHT)
+                tariffs.append(tariff)
 
-            star_add_increment = max(200, star_add_increment - 50)
-            star_count = 0
+            tariff_add_increment = max(200, tariff_add_increment - 50)
+            tariff_count = 0
 
 
 
@@ -154,17 +167,22 @@ def main():
             player_vel_y = 0
             on_ground = True
 
-        for star in stars[:]:
-            star.y += STAR_VEL
+        for star in tariffs[:]:
+            star.y += TARIFF_VEL
             if star.y > HEIGHT:
-                stars.remove(star)
-            elif star.y + star.height >= player.y and star.colliderect(player):
-                stars.remove(star)
+                tariffs.remove(star)
+                continue
+
+            offset = (star.x - player.x, star.y - player.y)
+
+
+            if PLAYER_MASK.overlap(TARIFF_MASK, offset):
+                tariffs.remove(star)
                 hit = True
                 break
 
         if hit:
-            lost_text = FONT.render("You Lost!", 1, "white")
+            lost_text = FONT_BUTTONS.render("You Lost!", 1, "white")
             WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2 - lost_text.get_height()/2))
             pygame.display.update()
             pygame.time.delay(4000)
