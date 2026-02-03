@@ -1,183 +1,176 @@
 import pygame
 import time
 import random
+
 pygame.font.init()
 
+# ----------------------------
+# Constants & Setup
+# ----------------------------
 WIDTH, HEIGHT = 1000, 800
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
-PLAYER_WIDTH = 60
-PLAYER_HEIGHT = 80
-TRUMP_WIDTH = 70
-TRUMP_HEIGHT = 90
-
-PLAYER_VEL = 5
-TARIFF_WIDTH = 30
-TARIFF_HEIGHT = 30
-TARIFF_VEL = 4
-
 pygame.display.set_caption("Tariff Game")
 
-BG = pygame.transform.scale(pygame.image.load("bg1.png"), (WIDTH, HEIGHT))
+# Player / Trump / Tariff
+PLAYER_WIDTH, PLAYER_HEIGHT = 80, 90
+TRUMP_WIDTH, TRUMP_HEIGHT = 70, 90
+TARIFF_WIDTH, TARIFF_HEIGHT = 30, 30
+
+PLAYER_VEL = 5
+TARIFF_VEL = 4
+
+# Fonts
 FONT_TITLE = pygame.font.SysFont("Times New Roman", 40, italic=True)
 FONT_TITLE.set_underline(True)
 FONT_BUTTONS = pygame.font.SysFont("Times New Roman", 30)
-PLAYER_IMG = pygame.image.load("player.png")
-TRUMP_IMG = pygame.image.load("trump.png")
-TARIFF_IMG = pygame.image.load("tariff.png")
-PLAYER_IMG = pygame.transform.scale(PLAYER_IMG, (PLAYER_WIDTH, PLAYER_HEIGHT))
-TRUMP_IMG = pygame.transform.scale(TRUMP_IMG, (TRUMP_WIDTH, TRUMP_HEIGHT))
-TARIFF_IMG = pygame.transform.scale(TARIFF_IMG, (TARIFF_WIDTH, TARIFF_HEIGHT))
+
+# Images
+BG = pygame.transform.scale(pygame.image.load("bg1.png"), (WIDTH, HEIGHT))
+PLAYER_IMG = pygame.transform.scale(pygame.image.load("player_walking_R_1.png"), (PLAYER_WIDTH, PLAYER_HEIGHT))
+TRUMP_IMG = pygame.transform.scale(pygame.image.load("trump.png"), (TRUMP_WIDTH, TRUMP_HEIGHT))
+TARIFF_IMG = pygame.transform.scale(pygame.image.load("tariff.png"), (TARIFF_WIDTH, TARIFF_HEIGHT))
+
+# Masks for pixel-perfect collision
 PLAYER_MASK = pygame.mask.from_surface(PLAYER_IMG)
 TARIFF_MASK = pygame.mask.from_surface(TARIFF_IMG)
 
+# Game States
 MENU = "menu"
 GAME1 = "game1"
 GAME2 = "game2"
 
-title_button = pygame.Rect(WIDTH // 2 - 200, 200, 400,60)
+# Buttons
+title_button = pygame.Rect(WIDTH // 2 - 200, 200, 400, 60)
 scenario_button1 = pygame.Rect(WIDTH // 2 - 300, 350, 650, 60)
 scenario_button2 = pygame.Rect(WIDTH // 2 - 300, 450, 650, 60)
 
+
+# ----------------------------
+# Drawing functions
+# ----------------------------
 def draw(player, elapsed_time, tariffs, trump):
     WIN.blit(BG, (0, 0))
-
     time_text = FONT_BUTTONS.render(f"Time: {round(elapsed_time)}s", 1, "white")
     WIN.blit(time_text, (10, 10))
 
-    #pygame.draw.rect(WIN, "red", player)
     WIN.blit(PLAYER_IMG, (player.x, player.y))
-    #pygame.draw.rect(WIN, "blue", trump)
     WIN.blit(TRUMP_IMG, (trump.x, trump.y))
 
     for tariff in tariffs:
         WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
 
-
     pygame.display.update()
+
+
 def draw_menu():
     WIN.blit(BG, (0, 0))
-
     title = FONT_TITLE.render("Wähle dein Szenario", True, "black")
-    #pygame.draw.rect(WIN, "black",title_button)
     WIN.blit(title, (WIDTH//2 - title.get_width()//2, 200))
 
     pygame.draw.rect(WIN, "red", scenario_button1)
     pygame.draw.rect(WIN, "blue", scenario_button2)
 
     text1 = FONT_BUTTONS.render("Große Einschränkungen des weltweiten Handels", True, "white")
-    text2 = FONT_BUTTONS .render("Weitgehend reibungsloser weltweiter Handel", True, "white")
-
+    text2 = FONT_BUTTONS.render("Weitgehend reibungsloser weltweiter Handel", True, "white")
     WIN.blit(text1, (scenario_button1.x + 20, scenario_button1.y + 15))
     WIN.blit(text2, (scenario_button2.x + 20, scenario_button2.y + 15))
 
     pygame.display.update()
 
-def main():
-    run = True
-    game_state = MENU
+
+# ----------------------------
+# Shared game loop for scenarios
+# ----------------------------
+def run_mode(player_speed, tariff_speed, extra_hazards=False):
     player = pygame.Rect(200, HEIGHT - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT)
-    trump = pygame.Rect(200, 5, TRUMP_WIDTH, TRUMP_HEIGHT )
+    trump = pygame.Rect(200, 5, TRUMP_WIDTH, TRUMP_HEIGHT)
 
-
-    TRUMP_VEL = random.randint(-5, 5)
-
-    player_vel_y = 0  # vertical speed
-    gravity = 0.5  # gravity pulling the player down
-    jump_strength = -10  # strength of the jump
+    player_vel_y = 0
+    gravity = 0.5
+    jump_strength = -10
     on_ground = True
-
-    clock = pygame.time.Clock()
-    start_time = time.time()
-    elapsed_time = 0
-    direction_timer = 0
-
-    tariff_add_increment = 2000
-    tariff_count = 0
 
     tariffs = []
     hit = False
 
-    while run:
-        tariff_count += clock.tick(60)
-        elapsed_time = time.time() - start_time
-        direction_timer += clock.get_time()
+    clock = pygame.time.Clock()
+    start_time = time.time()
+    elapsed_time = 0
 
+    TRUMP_VEL = random.choice([-5, 5])
+    direction_timer = 0
+    tariff_count = 0
+    tariff_add_increment = 2000
+
+    while True:
+        dt = clock.tick(60)
+        elapsed_time = time.time() - start_time
+        direction_timer += dt
+        tariff_count += dt
+
+        # ------------------------
+        # Event Handling
+        # ------------------------
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
-                break
+                pygame.quit()
+                return
 
-            if game_state == MENU:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if scenario_button1.collidepoint(event.pos):
-                        game_state = GAME1
-                    if scenario_button2.collidepoint(event.pos):
-                        game_state = GAME2
-
-        if game_state == MENU:
-            draw_menu()
-            continue
-
-        elif game_state == GAME1:
-            # run scenario 1 logic
-            draw(player, elapsed_time, tariffs, trump)
-
-        elif game_state == GAME2:
-            # run scenario 2 logic
-            draw(player, elapsed_time, tariffs, trump)
-
-        if direction_timer > 1000:  # every 2 seconds
-            TRUMP_VEL = random.choice([-7, -5, 5, 7])
-            direction_timer = 0
-
-        trump.x += TRUMP_VEL
-
-        if trump.x <= 0 or trump.x + TRUMP_WIDTH >= WIDTH:
-                TRUMP_VEL *= -1
-
-
-
-        if tariff_count > tariff_add_increment:
-            for _ in range(3):
-                tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH)
-                tariff_y = TRUMP_HEIGHT
-                tariff = pygame.Rect(tariff_x, tariff_y,
-                                   TARIFF_WIDTH, TARIFF_HEIGHT)
-                tariffs.append(tariff)
-
-            tariff_add_increment = max(200, tariff_add_increment - 50)
-            tariff_count = 0
-
-
-
+        # ------------------------
+        # Player Input
+        # ------------------------
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] and player.x - PLAYER_VEL >= 0:
-            player.x -= PLAYER_VEL
-        if keys[pygame.K_RIGHT] and player.x + PLAYER_VEL + player.width <= WIDTH:
-            player.x += PLAYER_VEL
-        if keys[pygame.K_SPACE] and on_ground:  # <-- jump
+        if keys[pygame.K_LEFT] and player.x - player_speed >= 0:
+            player.x -= player_speed
+        if keys[pygame.K_RIGHT] and player.x + player_speed + player.width <= WIDTH:
+            player.x += player_speed
+        if keys[pygame.K_SPACE] and on_ground:
             player_vel_y = jump_strength
             on_ground = False
+
+        # Gravity
         player_vel_y += gravity
         player.y += player_vel_y
-
-        # Check for hitting the floor
         if player.y + PLAYER_HEIGHT >= HEIGHT:
             player.y = HEIGHT - PLAYER_HEIGHT
             player_vel_y = 0
             on_ground = True
 
-        for star in tariffs[:]:
-            star.y += TARIFF_VEL
-            if star.y > HEIGHT:
-                tariffs.remove(star)
+        # ------------------------
+        # Trump Movement
+        # ------------------------
+        if direction_timer > 1000:
+            TRUMP_VEL = random.choice([-7, -5, 5, 7])
+            direction_timer = 0
+
+        trump.x += TRUMP_VEL
+        if trump.x <= 0 or trump.x + TRUMP_WIDTH >= WIDTH:
+            TRUMP_VEL *= -1
+
+        # ------------------------
+        # Tariff Spawning
+        # ------------------------
+        if tariff_count > tariff_add_increment:
+            for _ in range(3):
+                tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH)
+                tariff_y = TRUMP_HEIGHT
+                tariffs.append(pygame.Rect(tariff_x, tariff_y, TARIFF_WIDTH, TARIFF_HEIGHT))
+
+            tariff_count = 0
+            tariff_add_increment = max(200, tariff_add_increment - 50)
+
+        # ------------------------
+        # Collisions
+        # ------------------------
+        for tariff in tariffs[:]:
+            tariff.y += tariff_speed
+            if tariff.y > HEIGHT:
+                tariffs.remove(tariff)
                 continue
 
-            offset = (star.x - player.x, star.y - player.y)
-
-
+            offset = (tariff.x - player.x, tariff.y - player.y)
             if PLAYER_MASK.overlap(TARIFF_MASK, offset):
-                tariffs.remove(star)
+                tariffs.remove(tariff)
                 hit = True
                 break
 
@@ -186,8 +179,46 @@ def main():
             WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2 - lost_text.get_height()/2))
             pygame.display.update()
             pygame.time.delay(4000)
-            break
+            return
 
+        # ------------------------
+        # Draw Everything
+        # ------------------------
+        draw(player, elapsed_time, tariffs, trump)
+
+
+# ----------------------------
+# Individual scenario functions
+# ----------------------------
+def game_mode1():
+    run_mode(player_speed=5, tariff_speed=4, extra_hazards=False)
+
+
+def game_mode2():
+    run_mode(player_speed=4, tariff_speed=6, extra_hazards=True)
+
+
+# ----------------------------
+# Main Menu Loop
+# ----------------------------
+def main():
+    run = True
+    game_state = MENU
+
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+
+            if game_state == MENU and event.type == pygame.MOUSEBUTTONDOWN:
+                if scenario_button1.collidepoint(event.pos):
+                    game_mode1()
+                if scenario_button2.collidepoint(event.pos):
+                    game_mode2()
+
+        if game_state == MENU:
+            draw_menu()
+            pygame.time.Clock().tick(60)
 
     pygame.quit()
 
