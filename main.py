@@ -28,28 +28,29 @@ FONT_BUTTONS = pygame.font.SysFont("Times New Roman", 30)
 BG = pygame.transform.scale(pygame.image.load("bg1.png"), (WIDTH, HEIGHT))
 TRUMP_IMG = pygame.transform.scale(pygame.image.load("trump.png"), (TRUMP_WIDTH, TRUMP_HEIGHT))
 TARIFF_IMG = pygame.transform.scale(pygame.image.load("tariff.png"), (TARIFF_WIDTH, TARIFF_HEIGHT))
-PLAYER_IDLE = pygame.transform.scale(
-    pygame.image.load("player_idle.png"),
+
+PLAYER_IDLE = pygame.transform.smoothscale(
+    pygame.image.load("player_idle.png").convert_alpha(),
     (PLAYER_WIDTH, PLAYER_HEIGHT)
 )
 
 PLAYER_WALK_RIGHT = [
-    pygame.transform.scale(
-        pygame.image.load(f"player_walking_R_{i}.png"),
+    pygame.transform.smoothscale(
+        pygame.image.load(f"player_walking_R_{i}.png").convert_alpha(),
         (PLAYER_WIDTH, PLAYER_HEIGHT)
     )
     for i in range(1, 6)
 ]
 
 PLAYER_WALK_LEFT = [
-    pygame.transform.scale(
-        pygame.image.load(f"player_walking_L_{i}.png"),
+    pygame.transform.smoothscale(
+        pygame.image.load(f"player_walking_L_{i}.png").convert_alpha(),
         (PLAYER_WIDTH, PLAYER_HEIGHT)
     )
     for i in range(1, 6)
 ]
 
-# Masks for pixel-perfect collision
+
 TARIFF_MASK = pygame.mask.from_surface(TARIFF_IMG)
 
 # Game States
@@ -71,7 +72,9 @@ def draw(player, elapsed_time, tariffs, trump, player_img):
     time_text = FONT_BUTTONS.render(f"Time: {round(elapsed_time)}s", 1, "white")
     WIN.blit(time_text, (10, 10))
 
-    WIN.blit(player_img, (player.x, player.y))
+    img_rect = player_img.get_rect(midbottom=player.midbottom)
+    WIN.blit(player_img, img_rect.topleft)
+
     WIN.blit(TRUMP_IMG, (trump.x, trump.y))
 
     for tariff in tariffs:
@@ -118,7 +121,6 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
     WALK_ANIM_SPEED = 80  # ms per frame
     facing = "right"
 
-
     tariffs = []
     hit = False
 
@@ -160,16 +162,15 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
             player.x += player_speed
             facing = "right"
             moving = True
+
         if moving:
             walk_timer += dt
             if walk_timer > WALK_ANIM_SPEED:
                 walk_index = (walk_index + 1) % 5
                 walk_timer = 0
-
-            if facing == "right":
-                current_player_img = PLAYER_WALK_RIGHT[walk_index]
-            else:
-                current_player_img = PLAYER_WALK_LEFT[walk_index]
+            current_player_img = (
+                PLAYER_WALK_RIGHT[walk_index] if facing == "right" else PLAYER_WALK_LEFT[walk_index]
+            )
         else:
             current_player_img = PLAYER_IDLE
             walk_index = 0
@@ -185,6 +186,9 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
             player.y = HEIGHT - PLAYER_HEIGHT
             player_vel_y = 0
             on_ground = True
+
+        PLAYER_MASK = pygame.mask.from_surface(current_player_img)
+        
 
         # ------------------------
         # Trump Movement
