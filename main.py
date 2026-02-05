@@ -120,6 +120,14 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
     WALK_ANIM_SPEED = 80  # ms per frame
     facing = "right"
 
+    # ------------------------
+    # Precompute all masks
+    # ------------------------
+    PLAYER_WALK_RIGHT_MASKS = [pygame.mask.from_surface(img) for img in PLAYER_WALK_RIGHT]
+    PLAYER_WALK_LEFT_MASKS = [pygame.mask.from_surface(img) for img in PLAYER_WALK_LEFT]
+    PLAYER_IDLE_MASK = pygame.mask.from_surface(PLAYER_IDLE)
+    current_mask = PLAYER_IDLE_MASK
+
     tariffs = []
     hit = False
 
@@ -162,18 +170,26 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
             facing = "right"
             moving = True
 
+
         if moving:
             walk_timer += dt
             if walk_timer > WALK_ANIM_SPEED:
-                walk_index = (walk_index + 1) % 5
+                walk_index = (walk_index + 1) % len(PLAYER_WALK_RIGHT)
                 walk_timer = 0
-            current_player_img = (
-                PLAYER_WALK_RIGHT[walk_index] if facing == "right" else PLAYER_WALK_LEFT[walk_index]
-            )
+            if facing == "right":
+                current_player_img = PLAYER_WALK_RIGHT[walk_index]
+                current_mask = PLAYER_WALK_RIGHT_MASKS[walk_index]
+            else:
+                current_player_img = PLAYER_WALK_LEFT[walk_index]
+                current_mask = PLAYER_WALK_LEFT_MASKS[walk_index]
         else:
             current_player_img = PLAYER_IDLE
+            current_mask = PLAYER_IDLE_MASK
             walk_index = 0
-        PLAYER_MASK = pygame.mask.from_surface(current_player_img)
+
+        # Align the mask with the drawn image
+        player_img_rect = current_player_img.get_rect(midbottom=player.midbottom)
+        #PLAYER_MASK = pygame.mask.from_surface(current_player_img)
 
         if keys[pygame.K_SPACE] and on_ground:
             player_vel_y = jump_strength
@@ -220,9 +236,8 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
                 tariffs.remove(tariff)
                 continue
 
-            offset = (tariff.x - player.x, tariff.y - player.y)
-            if PLAYER_MASK.overlap(TARIFF_MASK, offset):
-                #tariffs.remove(tariff)
+            offset = (tariff.x - player_img_rect.x, tariff.y - player_img_rect.y)
+            if current_mask.overlap(TARIFF_MASK, offset):
                 hit = True
                 break
 
