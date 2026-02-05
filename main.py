@@ -174,6 +174,7 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
         else:
             current_player_img = PLAYER_IDLE
             walk_index = 0
+        Player_mask = pygame.mask.from_surface(current_player_img)
 
         if keys[pygame.K_SPACE] and on_ground:
             player_vel_y = jump_strength
@@ -186,8 +187,6 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
             player.y = HEIGHT - PLAYER_HEIGHT
             player_vel_y = 0
             on_ground = True
-
-        PLAYER_MASK = pygame.mask.from_surface(current_player_img)
         
 
         # ------------------------
