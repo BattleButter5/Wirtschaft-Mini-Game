@@ -26,8 +26,31 @@ FONT_BUTTONS = pygame.font.SysFont("Times New Roman", 30)
 
 # Images
 BG = pygame.transform.scale(pygame.image.load("bg1.png"), (WIDTH, HEIGHT))
-TRUMP_IMG = pygame.transform.scale(pygame.image.load("trump.png"), (TRUMP_WIDTH, TRUMP_HEIGHT))
 TARIFF_IMG = pygame.transform.scale(pygame.image.load("tariff.png"), (TARIFF_WIDTH, TARIFF_HEIGHT))
+
+TRUMP_IDLE = pygame.transform.scale(
+    pygame.image.load("trump_1.png").convert_alpha(),
+    (TRUMP_WIDTH, TRUMP_HEIGHT)
+)
+
+TRUMP_THROW_UP = pygame.transform.scale(
+    pygame.image.load("trump_2.png").convert_alpha(),
+    (TRUMP_WIDTH, TRUMP_HEIGHT)
+)
+
+TRUMP_THROW_DOWN = pygame.transform.scale(
+    pygame.image.load("trump_3.png").convert_alpha(),
+    (TRUMP_WIDTH, TRUMP_HEIGHT)
+)
+
+TRUMP_FRAMES = [
+    pygame.transform.scale(
+        pygame.image.load(f"trump_{i}.png"),
+        (TRUMP_WIDTH, TRUMP_HEIGHT)
+    )
+    for i in range(1, 4)
+]
+
 
 PLAYER_IDLE = pygame.transform.scale(
     pygame.image.load("player_idle.png"),
@@ -67,7 +90,7 @@ scenario_button2 = pygame.Rect(WIDTH // 2 - 300, 450, 650, 60)
 # ----------------------------
 # Drawing functions
 # ----------------------------
-def draw(player, elapsed_time, tariffs, trump, player_img):
+def draw(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
     WIN.blit(BG, (0, 0))
     time_text = FONT_BUTTONS.render(f"Time: {round(elapsed_time)}s", 1, "white")
     WIN.blit(time_text, (10, 10))
@@ -75,7 +98,7 @@ def draw(player, elapsed_time, tariffs, trump, player_img):
     img_rect = player_img.get_rect(midbottom=player.midbottom)
     WIN.blit(player_img, img_rect.topleft)
 
-    WIN.blit(TRUMP_IMG, (trump.x, trump.y))
+    WIN.blit(current_trump_img, (trump.x, trump.y))
 
     for tariff in tariffs:
         WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
@@ -119,6 +142,20 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
     walk_timer = 0
     WALK_ANIM_SPEED = 80  # ms per frame
     facing = "right"
+
+    # ------------------------
+    # Trump animation state
+    # ------------------------
+    TRUMP_FRAMES = [
+        pygame.transform.scale(pygame.image.load(f"trump_{i}.png"), (TRUMP_WIDTH, TRUMP_HEIGHT))
+        for i in range(1, 4)
+    ]
+
+    trump_anim_state = "idle"  # "idle" or "throw"
+    trump_anim_index = 0
+    trump_anim_timer = 0
+    TRUMP_ANIM_SPEED = 120  # ms per frame
+    current_trump_img = TRUMP_FRAMES[0]
 
     # ------------------------
     # Precompute all masks
@@ -215,10 +252,49 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
         if trump.x <= 0 or trump.x + TRUMP_WIDTH >= WIDTH:
             TRUMP_VEL *= -1
 
+        if trump_anim_state == "throw":
+            trump_anim_timer += dt
+            if trump_anim_timer > TRUMP_ANIM_SPEED:
+                trump_anim_index += 1
+                trump_anim_timer = 0
+
+                if trump_anim_index >= len(TRUMP_FRAMES):
+                    trump_anim_state = "idle"
+                    trump_anim_index = 0
+
+            current_trump_img = TRUMP_FRAMES[trump_anim_index]
+        else:
+            current_trump_img = TRUMP_FRAMES[0]
+
+        # ------------------------
+        # Trump Throw Animation
+        # ------------------------
+        trump_anim_timer += dt
+
+        if trump_anim_state == 1 and trump_anim_timer > TRUMP_ANIM_SPEED:
+            current_trump_img = TRUMP_THROW_UP
+            trump_anim_state = 2
+            trump_anim_timer = 0
+
+        elif trump_anim_state == 2 and trump_anim_timer > TRUMP_ANIM_SPEED:
+            current_trump_img = TRUMP_THROW_DOWN
+            trump_anim_state = 3
+            trump_anim_timer = 0
+
+        elif trump_anim_state == 3 and trump_anim_timer > TRUMP_ANIM_SPEED:
+            current_trump_img = TRUMP_IDLE
+            trump_anim_state = 0
+            trump_anim_timer = 0
+
         # ------------------------
         # Tariff Spawning
         # ------------------------
         if tariff_count > tariff_add_increment:
+            # Trigger Trump throw animation
+            trump_anim_state = "throw"
+            trump_anim_index = 0
+            trump_anim_timer = 0
+
             for _ in range(3):
                 tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH)
                 tariff_y = TRUMP_HEIGHT
@@ -251,7 +327,7 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
         # ------------------------
         # Draw Everything
         # ------------------------
-        draw(player, elapsed_time, tariffs, trump, current_player_img)
+        draw(player, elapsed_time, tariffs, trump, current_player_img, current_trump_img)
 
 
 # ----------------------------
