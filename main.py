@@ -92,8 +92,8 @@ scenario_button2 = pygame.Rect(WIDTH // 2 - 300, 450, 650, 60)
 # ----------------------------
 def draw(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
     WIN.blit(BG, (0, 0))
-    time_text = FONT_BUTTONS.render(f"Time: {round(elapsed_time)}s", 1, "white")
-    WIN.blit(time_text, (10, 10))
+    time_text = FONT_BUTTONS.render(f"Time: {round(elapsed_time)}s", 1, "black")
+    WIN.blit(time_text, (850, 10))
 
     img_rect = player_img.get_rect(midbottom=player.midbottom)
     WIN.blit(player_img, img_rect.topleft)
