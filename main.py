@@ -92,7 +92,7 @@ scenario_button2 = pygame.Rect(WIDTH // 2 - 300, 450, 650, 60)
 # ----------------------------
 def draw(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
     WIN.blit(BG, (0, 0))
-    time_text = FONT_BUTTONS.render(f"Time: {round(elapsed_time)}s", 1, "black")
+    time_text = FONT_BUTTONS.render(f"Zeit: {round(elapsed_time)}s", 1, "black")
     WIN.blit(time_text, (850, 10))
 
     img_rect = player_img.get_rect(midbottom=player.midbottom)
@@ -121,18 +121,32 @@ def draw_menu():
 
     pygame.display.update()
 
-def draw_health_bar(current, maximum):
-    BAR_WIDTH = 200
-    BAR_HEIGHT = 20
-    x = 20
-    y = 40
+def draw_health_bar(player_rect, health, max_health):
+    BAR_WIDTH = 40
+    BAR_HEIGHT = 6
+    OFFSET_Y = 10  # distance above the player's head
 
-    # background
-    pygame.draw.rect(WIN, (100, 100, 100), (x, y, BAR_WIDTH, BAR_HEIGHT))
+    health_ratio = health / max_health
 
-    # health
-    health_width = BAR_WIDTH * (current / maximum)
-    pygame.draw.rect(WIN, (200, 50, 50), (x, y, health_width, BAR_HEIGHT))
+    # Position above player
+    bar_x = player_rect.centerx - BAR_WIDTH // 2
+    bar_y = player_rect.top - OFFSET_Y
+
+    # Background (red)
+    bg_rect = pygame.Rect(bar_x, bar_y, BAR_WIDTH, BAR_HEIGHT)
+    pygame.draw.rect(WIN, (180, 0, 0), bg_rect)
+
+    # Health (green)
+    fg_rect = pygame.Rect(
+        bar_x,
+        bar_y,
+        int(BAR_WIDTH * health_ratio),
+        BAR_HEIGHT
+    )
+    pygame.draw.rect(WIN, (0, 200, 0), fg_rect)
+
+    # Optional border (looks clean)
+    pygame.draw.rect(WIN, (0, 0, 0), bg_rect, 1)
 
 
 
@@ -338,32 +352,25 @@ def run_mode(player_speed, tariff_speed):
                 tariffs.remove(tariff)
 
                 # small invulnerability delay (prevents double-hits)
-                pygame.time.delay(200)
+                pygame.time.delay(30)
 
-                pygame.time.delay(150)  # small hit pause
+
 
                 if player_health <= 0:
                     dead = True
 
                 break
 
-        #if hit:
-            #lost_text = FONT_BUTTONS.render("You Lost!", 1, "white")
-            #WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2 - lost_text.get_height()/2))
-            #pygame.display.update()
-            #pygame.time.delay(4000)
-            #return
-
         # ------------------------
         # Draw Everything
         # ------------------------
         draw(player, elapsed_time, tariffs, trump, current_player_img, current_trump_img)
-        draw_health_bar(player_health, MAX_HEALTH)
+        draw_health_bar(player, player_health, MAX_HEALTH)
         pygame.display.update()
 
         if dead:
-            pygame.time.delay(300)
-            lost_text = FONT_BUTTONS.render("You Lost!", True, "white")
+            pygame.time.delay(1000)
+            lost_text = FONT_BUTTONS.render("Du wurdest von den steigenden Zöllen überwältigt! ", True, "red")
             WIN.blit(
                 lost_text,
                 (WIDTH // 2 - lost_text.get_width() // 2,
