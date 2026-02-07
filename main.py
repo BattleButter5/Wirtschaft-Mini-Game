@@ -12,9 +12,9 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Tariff Game")
 
 # Player / Trump / Tariff
-PLAYER_WIDTH, PLAYER_HEIGHT = 80, 90
+PLAYER_WIDTH, PLAYER_HEIGHT = 74, 84
 TRUMP_WIDTH, TRUMP_HEIGHT = 70, 90
-TARIFF_WIDTH, TARIFF_HEIGHT = 30, 30
+TARIFF_WIDTH, TARIFF_HEIGHT = 23, 23
 
 PLAYER_VEL = 5
 TARIFF_VEL = 4
@@ -103,7 +103,7 @@ def draw(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
     for tariff in tariffs:
         WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
 
-    pygame.display.update()
+
 
 
 def draw_menu():
@@ -121,11 +121,27 @@ def draw_menu():
 
     pygame.display.update()
 
+def draw_health_bar(current, maximum):
+    BAR_WIDTH = 200
+    BAR_HEIGHT = 20
+    x = 20
+    y = 40
+
+    # background
+    pygame.draw.rect(WIN, (100, 100, 100), (x, y, BAR_WIDTH, BAR_HEIGHT))
+
+    # health
+    health_width = BAR_WIDTH * (current / maximum)
+    pygame.draw.rect(WIN, (200, 50, 50), (x, y, health_width, BAR_HEIGHT))
+
+
+
+
 
 # ----------------------------
 # Shared game loop for scenarios
 # ----------------------------
-def run_mode(player_speed, tariff_speed, extra_hazards=False):
+def run_mode(player_speed, tariff_speed):
     player = pygame.Rect(200, HEIGHT - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT)
     trump = pygame.Rect(200, 5, TRUMP_WIDTH, TRUMP_HEIGHT)
 
@@ -133,6 +149,10 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
     gravity = 0.5
     jump_strength = -10
     on_ground = True
+
+    player_health = 3
+    MAX_HEALTH = 3
+    dead = False
 
     # ------------------------
     # Player animation state
@@ -314,31 +334,55 @@ def run_mode(player_speed, tariff_speed, extra_hazards=False):
 
             offset = (tariff.x - player_img_rect.x, tariff.y - player_img_rect.y)
             if current_mask.overlap(TARIFF_MASK, offset):
-                hit = True
+                player_health -= 1
+                tariffs.remove(tariff)
+
+                # small invulnerability delay (prevents double-hits)
+                pygame.time.delay(200)
+
+                pygame.time.delay(150)  # small hit pause
+
+                if player_health <= 0:
+                    dead = True
+
                 break
 
-        if hit:
-            lost_text = FONT_BUTTONS.render("You Lost!", 1, "white")
-            WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2 - lost_text.get_height()/2))
-            pygame.display.update()
-            pygame.time.delay(4000)
-            return
+        #if hit:
+            #lost_text = FONT_BUTTONS.render("You Lost!", 1, "white")
+            #WIN.blit(lost_text, (WIDTH/2 - lost_text.get_width()/2, HEIGHT/2 - lost_text.get_height()/2))
+            #pygame.display.update()
+            #pygame.time.delay(4000)
+            #return
 
         # ------------------------
         # Draw Everything
         # ------------------------
         draw(player, elapsed_time, tariffs, trump, current_player_img, current_trump_img)
+        draw_health_bar(player_health, MAX_HEALTH)
+        pygame.display.update()
+
+        if dead:
+            pygame.time.delay(300)
+            lost_text = FONT_BUTTONS.render("You Lost!", True, "white")
+            WIN.blit(
+                lost_text,
+                (WIDTH // 2 - lost_text.get_width() // 2,
+                 HEIGHT // 2 - lost_text.get_height() // 2)
+            )
+            pygame.display.update()
+            pygame.time.delay(3000)
+            return
 
 
 # ----------------------------
 # Individual scenario functions
 # ----------------------------
 def game_mode1():
-    run_mode(player_speed=5, tariff_speed=4, extra_hazards=False)
+    run_mode(player_speed=5, tariff_speed=4)
 
 
 def game_mode2():
-    run_mode(player_speed=4, tariff_speed=6, extra_hazards=True)
+    run_mode(player_speed=4, tariff_speed=6)
 
 
 # ----------------------------
