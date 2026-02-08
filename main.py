@@ -471,12 +471,16 @@ def run_mode(player_speed, tariff_speed):
 
                 if restored_health > 0:
                     player_health = restored_health  # restore only if they got questions right
-                    dead = False
-                    continue  # continue game
+                    dead = False  # allow collisions to work again
+                    continue  # continue game loop
                 else:
-                    # They got 0 correct answers → permanent death
+                    # 0 correct answers → permanent death
                     show_game_over_screen()
                     return
+            else:
+                # Any death after first revival → permanent death
+                show_game_over_screen()
+                return
 
 
 
