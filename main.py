@@ -73,6 +73,10 @@ PLAYER_WALK_LEFT = [
     for i in range(1, 7)
 ]
 
+PLAYER_DEAD = pygame.transform.scale(
+    pygame.image.load("player_dead.png"),
+    (PLAYER_WIDTH, PLAYER_HEIGHT)
+)
 
 TARIFF_MASK = pygame.mask.from_surface(TARIFF_IMG)
 
@@ -372,8 +376,15 @@ def run_mode(player_speed, tariff_speed):
         pygame.display.update()
 
         if dead:
-            pygame.time.delay(1000)
-            lost_text = FONT_BUTTONS.render("Du wurdest von den steigenden Zöllen überwältigt! ", True, "red")
+            current_player_img = PLAYER_DEAD  # override sprite
+            # draw everything one last time
+            draw(player, elapsed_time, tariffs, trump, current_player_img, current_trump_img)
+            draw_health_bar(player, player_health, MAX_HEALTH)
+
+            # Draw the "You Lost" text
+            lost_text = FONT_BUTTONS.render(
+                "Du wurdest von den steigenden Zöllen überwältigt!", True, "red"
+            )
             WIN.blit(
                 lost_text,
                 (WIDTH // 2 - lost_text.get_width() // 2,
@@ -382,7 +393,6 @@ def run_mode(player_speed, tariff_speed):
             pygame.display.update()
             pygame.time.delay(3000)
             return
-
 
 # ----------------------------
 # Individual scenario functions
