@@ -1,6 +1,7 @@
 import pygame
 import time
 import random
+import webbrowser
 
 pygame.font.init()
 
@@ -153,8 +154,96 @@ def draw_health_bar(player_rect, health, max_health):
     pygame.draw.rect(WIN, (0, 0, 0), bg_rect, 1)
 
 
+def show_pdf(file_path):
+    webbrowser.open(file_path)
+
+#trivia function -------------------------------------
+#------------------------------------------------------
+
+def ask_trivia(questions):
+    """
+    questions: list of tuples [(question_str, answer_str), ...]
+    Returns number of correct answers
+    """
+    correct = 0
+    font = pygame.font.SysFont("Arial", 28)
+    input_box = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2, 300, 40)
+
+    for q, a in questions:
+        answer = ""
+        asking = True
+        while asking:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return 0
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        if answer.strip().lower() == a.lower():
+                            correct += 1
+                        asking = False
+                    elif event.key == pygame.K_BACKSPACE:
+                        answer = answer[:-1]
+                    else:
+                        answer += event.unicode
+
+            WIN.fill((50, 50, 50))
+            question_surf = font.render(q, True, (255, 255, 255))
+            WIN.blit(question_surf, (WIDTH // 2 - question_surf.get_width() // 2, HEIGHT // 2 - 50))
+
+            txt_surf = font.render(answer, True, (255, 255, 255))
+            pygame.draw.rect(WIN, (0, 0, 0), input_box)
+            WIN.blit(txt_surf, (input_box.x + 5, input_box.y + 5))
+            pygame.draw.rect(WIN, (255, 255, 255), input_box, 2)
+
+            pygame.display.update()
+
+    return correct
 
 
+#revive function -------------------------------------
+#-----------------------------------------------------
+def revive_player(player, max_health):
+    # Step 1: Show message
+    font = pygame.font.SysFont("Arial", 28)
+    WIN.fill((0,0,0))
+    msg = "You were overwhelmed by rising tariffs! Read this article to survive!"
+    text_surf = font.render(msg, True, (255,255,255))
+    WIN.blit(text_surf, (WIDTH//2 - text_surf.get_width()//2, HEIGHT//2))
+    pygame.display.update()
+    pygame.time.delay(2000)
+
+    # Step 2: Open PDF
+    show_pdf("Test.txt")  # replace with your PDF path
+
+    # Step 3: Ask trivia
+    questions = [
+        ("What is a tariff?", "A tax"),
+        ("Who sets tariffs?", "Government"),
+        ("Do tariffs increase import prices?", "Yes")
+    ]
+    correct = ask_trivia(questions)
+
+    # Step 4: Restore health
+    restored = max_health * (correct / len(questions))
+    return restored
+
+#game over function -------------------------
+#--------------------------------------------
+def show_game_over_screen():
+    WIN.blit(BG,(0,0))
+    WIN.blit(TRUMP_IDLE,(WIDTH//2,100))
+    dead_img_rect = PLAYER_DEAD.get_rect(midbottom=(WIDTH//2, HEIGHT//2 + 400))
+    WIN.blit(PLAYER_DEAD, dead_img_rect.topleft)
+
+    # Draw game over message
+    font = pygame.font.SysFont("Arial", 36)
+    msg = "Du konntest den steigenden Zöllen nicht standhalten!"
+    text_surf = font.render(msg, True, (255, 0, 0))
+    WIN.blit(text_surf, (WIDTH//2 - text_surf.get_width()//2, HEIGHT//2 - 50))
+
+    pygame.display.update()
+    pygame.time.delay(3000)  # wait 3 seconds before quitting
 
 # ----------------------------
 # Shared game loop for scenarios
@@ -170,9 +259,9 @@ def run_mode(player_speed, tariff_speed):
 
     player_health = 3
     MAX_HEALTH = 3
-    dead = False
 
-    difficulty = 1.0
+    dead = False
+    first_death = True
 
     # ------------------------
     # Player animation state
@@ -376,23 +465,20 @@ def run_mode(player_speed, tariff_speed):
         pygame.display.update()
 
         if dead:
-            current_player_img = PLAYER_DEAD  # override sprite
-            # draw everything one last time
-            draw(player, elapsed_time, tariffs, trump, current_player_img, current_trump_img)
-            draw_health_bar(player, player_health, MAX_HEALTH)
+            if first_death:
+                first_death = False
+                restored_health = revive_player(player, MAX_HEALTH)
 
-            # Draw the "You Lost" text
-            lost_text = FONT_BUTTONS.render(
-                "Du wurdest von den steigenden Zöllen überwältigt!", True, "red"
-            )
-            WIN.blit(
-                lost_text,
-                (WIDTH // 2 - lost_text.get_width() // 2,
-                 HEIGHT // 2 - lost_text.get_height() // 2)
-            )
-            pygame.display.update()
-            pygame.time.delay(3000)
-            return
+                if restored_health > 0:
+                    player_health = restored_health  # restore only if they got questions right
+                    dead = False
+                    continue  # continue game
+                else:
+                    # They got 0 correct answers → permanent death
+                    show_game_over_screen()
+                    return
+
+
 
 # ----------------------------
 # Individual scenario functions
