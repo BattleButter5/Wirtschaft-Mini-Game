@@ -168,6 +168,8 @@ def run_mode(player_speed, tariff_speed):
     MAX_HEALTH = 3
     dead = False
 
+    difficulty = 1.0
+
     # ------------------------
     # Player animation state
     # ------------------------
@@ -216,6 +218,7 @@ def run_mode(player_speed, tariff_speed):
         elapsed_time = time.time() - start_time
         direction_timer += dt
         tariff_count += dt
+        difficulty = min(1 + elapsed_time / 30, 3)
 
         # ------------------------
         # Event Handling
@@ -335,13 +338,13 @@ def run_mode(player_speed, tariff_speed):
                 tariffs.append(pygame.Rect(tariff_x, tariff_y, TARIFF_WIDTH, TARIFF_HEIGHT))
 
             tariff_count = 0
-            tariff_add_increment = max(200, tariff_add_increment - 50)
+            tariff_add_increment = max(375, tariff_add_increment - 80)
 
         # ------------------------
         # Collisions
         # ------------------------
         for tariff in tariffs[:]:
-            tariff.y += tariff_speed
+            tariff.y += tariff_speed * difficulty
             if tariff.y > HEIGHT:
                 tariffs.remove(tariff)
                 continue
