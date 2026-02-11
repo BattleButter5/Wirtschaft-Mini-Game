@@ -229,7 +229,7 @@ def revive_player(player, max_health):
     pygame.time.delay(2000)
 
     # Step 2: Open PDF
-    show_pdf("Test.txt")  # replace with your PDF path
+    show_pdf("pdf-sample_0.pdf")
 
     # Step 3: Ask trivia
     questions = [
