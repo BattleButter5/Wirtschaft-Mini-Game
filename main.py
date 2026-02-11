@@ -162,44 +162,59 @@ def show_pdf(file_path):
 
 def ask_trivia(questions):
     """
-    questions: list of tuples [(question_str, answer_str), ...]
+    questions: list of tuples:
+    (question_string, [option1, option2, option3], correct_index)
     Returns number of correct answers
     """
+
     correct = 0
     font = pygame.font.SysFont("Arial", 28)
-    input_box = pygame.Rect(WIDTH // 2 - 150, HEIGHT // 2, 300, 40)
+    clock = pygame.time.Clock()
 
-    for q, a in questions:
-        answer = ""
-        asking = True
-        while asking:
+    for question, options, correct_index in questions:
+        answered = False
+        selected = -1
+
+        while not answered:
+            clock.tick(60)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     return 0
+
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        if answer.strip().lower() == a.lower():
-                            correct += 1
-                        asking = False
-                    elif event.key == pygame.K_BACKSPACE:
-                        answer = answer[:-1]
-                    else:
-                        answer += event.unicode
+                    if event.key == pygame.K_1:
+                        selected = 0
+                        answered = True
+                    elif event.key == pygame.K_2:
+                        selected = 1
+                        answered = True
+                    elif event.key == pygame.K_3:
+                        selected = 2
+                        answered = True
 
-            WIN.fill((50, 50, 50))
-            question_surf = font.render(q, True, (255, 255, 255))
-            WIN.blit(question_surf, (WIDTH // 2 - question_surf.get_width() // 2, HEIGHT // 2 - 50))
+            WIN.fill((40, 40, 40))
 
-            txt_surf = font.render(answer, True, (255, 255, 255))
-            pygame.draw.rect(WIN, (0, 0, 0), input_box)
-            WIN.blit(txt_surf, (input_box.x + 5, input_box.y + 5))
-            pygame.draw.rect(WIN, (255, 255, 255), input_box, 2)
+            # Draw question
+            question_surf = font.render(question, True, (255, 255, 255))
+            WIN.blit(question_surf, (WIDTH // 2 - question_surf.get_width() // 2, HEIGHT // 2 - 100))
+
+            # Draw options
+            for i, option in enumerate(options):
+                option_text = f"{i+1}. {option}"
+                option_surf = font.render(option_text, True, (200, 200, 200))
+                WIN.blit(option_surf, (WIDTH // 2 - option_surf.get_width() // 2, HEIGHT // 2 - 40 + i * 40))
 
             pygame.display.update()
 
-    return correct
+        # Check answer
+        if selected == correct_index:
+            correct += 1
 
+        pygame.time.delay(500)  # small pause before next question
+
+    return correct
 
 #revive function -------------------------------------
 #-----------------------------------------------------
@@ -218,10 +233,18 @@ def revive_player(player, max_health):
 
     # Step 3: Ask trivia
     questions = [
-        ("What is a tariff?", "A tax"),
-        ("Who sets tariffs?", "Government"),
-        ("Do tariffs increase import prices?", "Yes")
-    ]
+    ("What is a tariff?",
+     ["A tax", "A trade agreement", "A subsidy"],
+     0),
+
+    ("Who sets tariffs?",
+     ["Private companies", "Government", "Banks"],
+     1),
+
+    ("Do tariffs increase import prices?",
+     ["Yes", "No", "Only in Europe"],
+     0)
+]
     correct = ask_trivia(questions)
 
     # Step 4: Restore health
@@ -467,21 +490,26 @@ def run_mode(player_speed, tariff_speed):
         if dead:
             if first_death:
                 first_death = False
+
+                pause_start = time.time()
+
                 restored_health = revive_player(player, MAX_HEALTH)
 
+                pause_duration = time.time() - pause_start
+                start_time += pause_duration  # pause game timer properly
+
                 if restored_health > 0:
-                    player_health = restored_health  # restore only if they got questions right
-                    dead = False  # allow collisions to work again
-                    continue  # continue game loop
+                    player_health = int(restored_health)
+                    dead = False
+                    continue
                 else:
-                    # 0 correct answers → permanent death
                     show_game_over_screen()
                     return
+
             else:
-                # Any death after first revival → permanent death
+                # SECOND DEATH → permanent game over
                 show_game_over_screen()
                 return
-
 
 
 # ----------------------------
