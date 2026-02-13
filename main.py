@@ -95,7 +95,7 @@ scenario_button2 = pygame.Rect(WIDTH // 2 - 300, 450, 650, 60)
 # ----------------------------
 # Drawing functions
 # ----------------------------
-def draw(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
+def draw_1(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
     WIN.blit(BG, (0, 0))
     time_text = FONT_BUTTONS.render(f"Zeit: {round(elapsed_time)}s", 1, "black")
     WIN.blit(time_text, (850, 10))
@@ -104,6 +104,18 @@ def draw(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
     WIN.blit(player_img, img_rect.topleft)
 
     WIN.blit(current_trump_img, (trump.x, trump.y))
+
+    for tariff in tariffs:
+        WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
+
+
+def draw_2(player, elapsed_time, tariffs, player_img):
+    WIN.blit(BG, (0, 0))
+    time_text = FONT_BUTTONS.render(f"Zeit: {round(elapsed_time)}s", 1, "black")
+    WIN.blit(time_text, (850, 10))
+
+    img_rect = player_img.get_rect(midbottom=player.midbottom)
+    WIN.blit(player_img, img_rect.topleft)
 
     for tariff in tariffs:
         WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
@@ -127,26 +139,26 @@ def draw_menu():
     pygame.display.update()
 
 def draw_health_bar(player_rect, health, max_health):
-    BAR_WIDTH = 40
-    BAR_HEIGHT = 6
-    OFFSET_Y = 10  # distance above the player's head
+    bar_width = 40
+    bar_height = 6
+    offset_y = 10  # distance above the player's head
 
     health_ratio = health / max_health
 
     # Position above player
-    bar_x = player_rect.centerx - BAR_WIDTH // 2
-    bar_y = player_rect.top - OFFSET_Y
+    bar_x = player_rect.centerx - bar_width // 2
+    bar_y = player_rect.top - offset_y
 
     # Background (red)
-    bg_rect = pygame.Rect(bar_x, bar_y, BAR_WIDTH, BAR_HEIGHT)
+    bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
     pygame.draw.rect(WIN, (180, 0, 0), bg_rect)
 
     # Health (green)
     fg_rect = pygame.Rect(
         bar_x,
         bar_y,
-        int(BAR_WIDTH * health_ratio),
-        BAR_HEIGHT
+        int(bar_width * health_ratio),
+        bar_height
     )
     pygame.draw.rect(WIN, (0, 200, 0), fg_rect)
 
@@ -218,7 +230,7 @@ def ask_trivia(questions):
 
 #revive function -------------------------------------
 #-----------------------------------------------------
-def revive_player(player, max_health):
+def revive_player(max_health):
     # Step 1: Show message
     font = pygame.font.SysFont("Arial", 28)
     WIN.fill((0,0,0))
@@ -271,7 +283,7 @@ def show_game_over_screen():
 # ----------------------------
 # Shared game loop for scenarios
 # ----------------------------
-def run_mode(player_speed, tariff_speed):
+def run_mode_1(player_speed, tariff_speed):
     player = pygame.Rect(200, HEIGHT - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT)
     trump = pygame.Rect(200, 5, TRUMP_WIDTH, TRUMP_HEIGHT)
 
@@ -281,7 +293,7 @@ def run_mode(player_speed, tariff_speed):
     on_ground = True
 
     player_health = 3
-    MAX_HEALTH = 3
+    max_health = 3
 
     dead = False
     first_death = True
@@ -292,7 +304,7 @@ def run_mode(player_speed, tariff_speed):
     current_player_img = PLAYER_IDLE
     walk_index = 0
     walk_timer = 0
-    WALK_ANIM_SPEED = 80  # ms per frame
+    walk_anim_speed = 80  # ms per frame
     facing = "right"
 
     # ------------------------
@@ -363,7 +375,7 @@ def run_mode(player_speed, tariff_speed):
 
         if moving:
             walk_timer += dt
-            if walk_timer > WALK_ANIM_SPEED:
+            if walk_timer > walk_anim_speed:
                 walk_index = (walk_index + 1) % len(PLAYER_WALK_RIGHT)
                 walk_timer = 0
             if facing == "right":
@@ -483,8 +495,8 @@ def run_mode(player_speed, tariff_speed):
         # ------------------------
         # Draw Everything
         # ------------------------
-        draw(player, elapsed_time, tariffs, trump, current_player_img, current_trump_img)
-        draw_health_bar(player, player_health, MAX_HEALTH)
+        draw_1(player, elapsed_time, tariffs, trump, current_player_img, current_trump_img)
+        draw_health_bar(player, player_health, max_health)
         pygame.display.update()
 
         if dead:
@@ -493,7 +505,7 @@ def run_mode(player_speed, tariff_speed):
 
                 pause_start = time.time()
 
-                restored_health = revive_player(player, MAX_HEALTH)
+                restored_health = revive_player(max_health)
 
                 pause_duration = time.time() - pause_start
                 start_time += pause_duration  # pause game timer properly
@@ -512,15 +524,197 @@ def run_mode(player_speed, tariff_speed):
                 return
 
 
+#------------------------------------------------
+#------------------------------------------------
+# run_mode_2
+#------------------------------------------------
+#------------------------------------------------
+def run_mode_2(player_speed, tariff_speed):
+    player = pygame.Rect(200, HEIGHT - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT)
+
+    player_vel_y = 0
+    gravity = 0.5
+    jump_strength = -10
+    on_ground = True
+
+    player_health = 3
+    max_health = 3
+
+    dead = False
+    first_death = True
+
+    # ------------------------
+    # Player animation state
+    # ------------------------
+    current_player_img = PLAYER_IDLE
+    walk_index = 0
+    walk_timer = 0
+    walk_anim_speed = 80  # ms per frame
+    facing = "right"
+
+
+
+    # ------------------------
+    # Precompute all masks
+    # ------------------------
+    PLAYER_WALK_RIGHT_MASKS = [pygame.mask.from_surface(img) for img in PLAYER_WALK_RIGHT]
+    PLAYER_WALK_LEFT_MASKS = [pygame.mask.from_surface(img) for img in PLAYER_WALK_LEFT]
+    PLAYER_IDLE_MASK = pygame.mask.from_surface(PLAYER_IDLE)
+    current_mask = PLAYER_IDLE_MASK
+
+    tariffs = []
+    hit = False
+
+    clock = pygame.time.Clock()
+    start_time = time.time()
+
+
+    tariff_count = 0
+    tariff_interval = random.randint(10000, 15000)
+
+
+    while True:
+        dt = clock.tick(60)
+        elapsed_time = time.time() - start_time
+        tariff_count += dt
+
+
+        # ------------------------
+        # Event Handling
+        # ------------------------
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
+
+        # ------------------------
+        # Player Input
+        # ------------------------
+        keys = pygame.key.get_pressed()
+        moving = False
+
+        if keys[pygame.K_LEFT] and player.x - player_speed >= 0:
+            player.x -= player_speed
+            facing = "left"
+            moving = True
+
+        if keys[pygame.K_RIGHT] and player.x + player_speed + player.width <= WIDTH:
+            player.x += player_speed
+            facing = "right"
+            moving = True
+
+
+        if moving:
+            walk_timer += dt
+            if walk_timer > walk_anim_speed:
+                walk_index = (walk_index + 1) % len(PLAYER_WALK_RIGHT)
+                walk_timer = 0
+            if facing == "right":
+                current_player_img = PLAYER_WALK_RIGHT[walk_index]
+                current_mask = PLAYER_WALK_RIGHT_MASKS[walk_index]
+            else:
+                current_player_img = PLAYER_WALK_LEFT[walk_index]
+                current_mask = PLAYER_WALK_LEFT_MASKS[walk_index]
+        else:
+            current_player_img = PLAYER_IDLE
+            current_mask = PLAYER_IDLE_MASK
+            walk_index = 0
+
+        # Align the mask with the drawn image
+        player_img_rect = current_player_img.get_rect(midbottom=player.midbottom)
+        #PLAYER_MASK = pygame.mask.from_surface(current_player_img)
+
+        if keys[pygame.K_SPACE] and on_ground:
+            player_vel_y = jump_strength
+            on_ground = False
+
+        # Gravity
+        player_vel_y += gravity
+        player.y += player_vel_y
+        if player.y + PLAYER_HEIGHT >= HEIGHT:
+            player.y = HEIGHT - PLAYER_HEIGHT
+            player_vel_y = 0
+            on_ground = True
+
+
+        # ------------------------
+        # Tariff Spawning
+        # ------------------------
+
+
+        if tariff_count > tariff_interval:
+            for _ in range(2):
+                tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH)
+                tariff_y = 100
+                tariffs.append(pygame.Rect(tariff_x, tariff_y, TARIFF_WIDTH, TARIFF_HEIGHT))
+
+            tariff_count = 0
+
+
+        # ------------------------
+        # Collisions
+        # ------------------------
+        for tariff in tariffs[:]:
+            tariff.y += tariff_speed
+            if tariff.y > HEIGHT:
+                tariffs.remove(tariff)
+                continue
+
+            offset = (tariff.x - player_img_rect.x, tariff.y - player_img_rect.y)
+            if current_mask.overlap(TARIFF_MASK, offset):
+                player_health -= 1
+                tariffs.remove(tariff)
+
+
+                pygame.time.delay(30)
+
+
+
+                if player_health <= 0:
+                    dead = True
+
+                break
+
+        # ------------------------
+        # Draw Everything
+        # ------------------------
+        draw_2(player, elapsed_time, tariffs, current_player_img)
+        draw_health_bar(player, player_health, max_health)
+        pygame.display.update()
+
+        if dead:
+            if first_death:
+                first_death = False
+
+                pause_start = time.time()
+
+                restored_health = revive_player(max_health)
+
+                pause_duration = time.time() - pause_start
+                start_time += pause_duration  # pause game timer properly
+
+                if restored_health > 0:
+                    player_health = int(restored_health)
+                    dead = False
+                    continue
+                else:
+                    show_game_over_screen()
+                    return
+
+            else:
+                # SECOND DEATH → permanent game over
+                show_game_over_screen()
+                return
+
 # ----------------------------
 # Individual scenario functions
 # ----------------------------
 def game_mode1():
-    run_mode(player_speed=5, tariff_speed=4)
+    run_mode_1(player_speed=5, tariff_speed=4)
 
 
 def game_mode2():
-    run_mode(player_speed=4, tariff_speed=6)
+    run_mode_2(player_speed=5, tariff_speed=4)
 
 
 # ----------------------------
