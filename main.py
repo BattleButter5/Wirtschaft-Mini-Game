@@ -280,6 +280,28 @@ def show_game_over_screen():
     pygame.display.update()
     pygame.time.delay(3000)  # wait 3 seconds before quitting
 
+#----------------------------------------
+class MoneyBill(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+
+        original_img = pygame.image.load("money.png").convert_alpha()
+        self.image = pygame.transform.scale(original_img, (25, 25))
+
+        self.rect = self.image.get_rect()
+
+        self.rect.x = random.randint(0, WIDTH - self.rect.width)
+        self.rect.y = -50
+
+        self.speed = 180
+
+    def update(self, dt):
+        self.rect.y += self.speed * dt / 1000
+
+        # remove if off-screen
+        if self.rect.top > HEIGHT:
+            self.kill()
+
 # ----------------------------
 # Shared game loop for scenarios
 # ----------------------------
@@ -297,6 +319,10 @@ def run_mode_1(player_speed, tariff_speed):
 
     dead = False
     first_death = True
+
+    money_bills = pygame.sprite.Group()
+    money_timer = 0
+    money_interval = random.randint(14000, 20000)
 
     # ------------------------
     # Player animation state
@@ -347,6 +373,8 @@ def run_mode_1(player_speed, tariff_speed):
         direction_timer += dt
         tariff_count += dt
         difficulty = min(1 + elapsed_time / 30, 3)
+
+        money_timer += dt
 
         # ------------------------
         # Event Handling
@@ -468,6 +496,15 @@ def run_mode_1(player_speed, tariff_speed):
             tariff_count = 0
             tariff_add_increment = max(375, tariff_add_increment - 80)
 
+        #-----------------------------
+        #---money----------
+        if money_timer >= money_interval:
+            bill = MoneyBill()
+            money_bills.add(bill)
+
+            money_timer = 0
+            money_interval = random.randint(10000, 15000)
+
         # ------------------------
         # Collisions
         # ------------------------
@@ -491,12 +528,23 @@ def run_mode_1(player_speed, tariff_speed):
                     dead = True
 
                 break
+                # ------------------------
+                # Money Pickup Collision
+                # ------------------------
+            for bill in money_bills:
+                if player.colliderect(bill.rect):
+                    player_health += 1  # restore 1 health
+                    if player_health > max_health:
+                        player_health = max_health
+                    bill.kill()
 
         # ------------------------
         # Draw Everything
         # ------------------------
         draw_1(player, elapsed_time, tariffs, trump, current_player_img, current_trump_img)
         draw_health_bar(player, player_health, max_health)
+        money_bills.update(dt)
+        money_bills.draw(WIN)
         pygame.display.update()
 
         if dead:
