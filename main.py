@@ -16,9 +16,9 @@ UI_HEIGHT = 100
 GAME_HEIGHT = HEIGHT - UI_HEIGHT
 
 # Player / Trump / Tariff
-PLAYER_WIDTH, PLAYER_HEIGHT = 74, 84
-TRUMP_WIDTH, TRUMP_HEIGHT = 70, 90
-TARIFF_WIDTH, TARIFF_HEIGHT = 23, 23
+PLAYER_WIDTH, PLAYER_HEIGHT = 100, 120
+TRUMP_WIDTH, TRUMP_HEIGHT = 105, 125
+TARIFF_WIDTH, TARIFF_HEIGHT = 35, 35
 
 PLAYER_VEL = 5
 TARIFF_VEL = 4
@@ -258,23 +258,21 @@ def revive_player(max_health):
 
     # Step 3: Ask trivia
     questions = [
-    ("What is a tariff?",
-     ["A tax", "A trade agreement", "A subsidy"],
-     0),
-
-    ("Who sets tariffs?",
-     ["Private companies", "Government", "Banks"],
-     1),
-
-    ("Do tariffs increase import prices?",
-     ["Yes", "No", "Only in Europe"],
-     0)
-]
+        ("What is a tariff?", ["A tax", "A trade agreement", "A subsidy"], 0),
+        ("Who sets tariffs?", ["Private companies", "Government", "Banks"], 1),
+        ("Do tariffs increase import prices?", ["Yes", "No", "Only in Europe"], 0)
+    ]
     correct = ask_trivia(questions)
 
     # Step 4: Restore health
-    restored = max_health * (correct / len(questions))
-    return restored
+    restored_health = max_health * (correct / len(questions))
+
+    # Return restored health or 0 if player failed
+    if restored_health > 0:
+        return int(restored_health)
+    else:
+        return 0
+
 
 #game over function -------------------------
 #--------------------------------------------
@@ -299,7 +297,7 @@ class MoneyBill(pygame.sprite.Sprite):
         super().__init__()
 
         original_img = pygame.image.load("money.png").convert_alpha()
-        self.image = pygame.transform.scale(original_img, (25, 25))
+        self.image = pygame.transform.scale(original_img, (35, 35))
 
         self.rect = self.image.get_rect()
 
@@ -324,7 +322,7 @@ def run_mode_1(player_speed, tariff_speed):
 
     player_vel_y = 0
     gravity = 0.5
-    jump_strength = -10
+    jump_strength = -12
     on_ground = True
 
     player_health = 3
@@ -396,6 +394,9 @@ def run_mode_1(player_speed, tariff_speed):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
 
         # ------------------------
         # Player Input
@@ -501,7 +502,7 @@ def run_mode_1(player_speed, tariff_speed):
             trump_anim_index = 0
             trump_anim_timer = 0
 
-            for _ in range(3):
+            for _ in range(4):
                 tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH)
                 tariff_y = TRUMP_HEIGHT
                 tariffs.append(pygame.Rect(tariff_x, tariff_y, TARIFF_WIDTH, TARIFF_HEIGHT))
@@ -565,25 +566,23 @@ def run_mode_1(player_speed, tariff_speed):
                 first_death = False
 
                 pause_start = time.time()
-
                 restored_health = revive_player(max_health)
-
                 pause_duration = time.time() - pause_start
-                start_time += pause_duration  # pause game timer properly
+                start_time += pause_duration  # pause game timer
 
                 if restored_health > 0:
-                    player_health = int(restored_health)
+                    player_health = restored_health
                     dead = False
                     continue
                 else:
+                    # permanent game over → back to menu
                     show_game_over_screen()
-                    return
+                    return "menu"
 
             else:
                 # SECOND DEATH → permanent game over
                 show_game_over_screen()
-                return
-
+                return "menu"
 
 #------------------------------------------------
 #------------------------------------------------
@@ -654,7 +653,6 @@ def run_mode_2(player_speed, tariff_speed):
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                 pygame.quit()
                  return
 
         # ------------------------
@@ -768,35 +766,32 @@ def run_mode_2(player_speed, tariff_speed):
                 first_death = False
 
                 pause_start = time.time()
-
                 restored_health = revive_player(max_health)
-
                 pause_duration = time.time() - pause_start
-                start_time += pause_duration  # pause game timer properly
+                start_time += pause_duration  # pause game timer
 
                 if restored_health > 0:
-                    player_health = int(restored_health)
+                    player_health = restored_health
                     dead = False
                     continue
                 else:
+                    # permanent game over → back to menu
                     show_game_over_screen()
-                    return
+                    return "menu"
 
             else:
                 # SECOND DEATH → permanent game over
                 show_game_over_screen()
-                return
+                return "menu"
 
 # ----------------------------
 # Individual scenario functions
 # ----------------------------
 def game_mode1():
-    run_mode_1(player_speed=5, tariff_speed=4)
-
+    return run_mode_1(player_speed=8, tariff_speed=6)
 
 def game_mode2():
-    run_mode_2(player_speed=5, tariff_speed=4)
-
+    return run_mode_2(player_speed=8, tariff_speed=6)
 
 # ----------------------------
 # Main Menu Loop
@@ -817,9 +812,19 @@ def main():
 
             if game_state == MENU and event.type == pygame.MOUSEBUTTONDOWN:
                 if scenario_button1.collidepoint(event.pos):
-                    game_mode1()
+                    result = game_mode1()
+                    if result == "menu":
+                        game_state = MENU
                 if scenario_button2.collidepoint(event.pos):
-                    game_mode2()
+                    result = game_mode2()
+                    if result == "menu":
+                        game_state = MENU
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    if game_state != MENU:
+                        game_state = MENU  # back to menu
+                    else:
+                        run = False
 
         if game_state == MENU:
             draw_menu()
