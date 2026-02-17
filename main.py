@@ -8,8 +8,8 @@ pygame.font.init()
 # ----------------------------
 # Constants & Setup
 # ----------------------------
-WIDTH, HEIGHT = 1000, 800
-WIN = pygame.display.set_mode((WIDTH, HEIGHT))
+WIN = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+WIDTH, HEIGHT = WIN.get_size()
 pygame.display.set_caption("Tariff Game")
 
 # Player / Trump / Tariff
