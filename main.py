@@ -12,6 +12,9 @@ WIN = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 WIDTH, HEIGHT = WIN.get_size()
 pygame.display.set_caption("Tariff Game")
 
+UI_HEIGHT = 100
+GAME_HEIGHT = HEIGHT - UI_HEIGHT
+
 # Player / Trump / Tariff
 PLAYER_WIDTH, PLAYER_HEIGHT = 74, 84
 TRUMP_WIDTH, TRUMP_HEIGHT = 70, 90
@@ -111,16 +114,18 @@ def draw_1(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
 
 def draw_2(player, elapsed_time, tariffs, player_img, money, month, quota):
     WIN.blit(BG, (0, 0))
-    time_text = FONT_BUTTONS.render(f"Zeit: {round(elapsed_time)}s", 1, "black")
-    WIN.blit(time_text, (850, 10))
+    pygame.draw.rect(WIN, (30, 30, 30), (0, 0, WIDTH, UI_HEIGHT))
+    pygame.draw.line(WIN, (80, 80, 80), (0, UI_HEIGHT), (WIDTH, UI_HEIGHT), 2)
 
-    money_text = FONT_BUTTONS.render(f"Money: ${money}", 1, "black")
-    month_text = FONT_BUTTONS.render(f"Month: {month}", 1, "black")
-    quota_text = FONT_BUTTONS.render(f"Quota: ${quota}", 1, "black")
+    money_text = FONT_BUTTONS.render(f"Money: ${money}", True, "white")
+    month_text = FONT_BUTTONS.render(f"Month: {month}", True, "white")
+    quota_text = FONT_BUTTONS.render(f"Quota: ${quota}", True, "white")
+    time_text = FONT_BUTTONS.render(f"Time: {int(elapsed_time)}s", True, "white")
 
-    WIN.blit(money_text, (20, 10))
-    WIN.blit(month_text, (20, 40))
-    WIN.blit(quota_text, (20, 70))
+    WIN.blit(money_text, (20, 20))
+    WIN.blit(month_text, (250, 20))
+    WIN.blit(quota_text, (450, 20))
+    WIN.blit(time_text, (650, 20))
 
     img_rect = player_img.get_rect(midbottom=player.midbottom)
     WIN.blit(player_img, img_rect.topleft)
@@ -647,6 +652,11 @@ def run_mode_2(player_speed, tariff_speed):
                 pygame.quit()
                 return
 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                 pygame.quit()
+                 return
+
         # ------------------------
         # Player Input
         # ------------------------
@@ -799,6 +809,11 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    return
 
             if game_state == MENU and event.type == pygame.MOUSEBUTTONDOWN:
                 if scenario_button1.collidepoint(event.pos):
