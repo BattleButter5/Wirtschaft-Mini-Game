@@ -109,10 +109,18 @@ def draw_1(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
         WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
 
 
-def draw_2(player, elapsed_time, tariffs, player_img):
+def draw_2(player, elapsed_time, tariffs, player_img, money, month, quota):
     WIN.blit(BG, (0, 0))
     time_text = FONT_BUTTONS.render(f"Zeit: {round(elapsed_time)}s", 1, "black")
     WIN.blit(time_text, (850, 10))
+
+    money_text = FONT_BUTTONS.render(f"Money: ${money}", 1, "black")
+    month_text = FONT_BUTTONS.render(f"Month: {month}", 1, "black")
+    quota_text = FONT_BUTTONS.render(f"Quota: ${quota}", 1, "black")
+
+    WIN.blit(money_text, (20, 10))
+    WIN.blit(month_text, (20, 40))
+    WIN.blit(quota_text, (20, 70))
 
     img_rect = player_img.get_rect(midbottom=player.midbottom)
     WIN.blit(player_img, img_rect.topleft)
@@ -580,6 +588,15 @@ def run_mode_1(player_speed, tariff_speed):
 def run_mode_2(player_speed, tariff_speed):
     player = pygame.Rect(200, HEIGHT - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT)
 
+    clock = pygame.time.Clock()
+    start_time = time.time()
+
+    month = 1
+    quota = 100
+    money = 0
+    month_duration = 30
+    month_start_time = time.time()
+
     player_vel_y = 0
     gravity = 0.5
     jump_strength = -10
@@ -601,10 +618,6 @@ def run_mode_2(player_speed, tariff_speed):
     facing = "right"
 
 
-
-    # ------------------------
-    # Precompute all masks
-    # ------------------------
     PLAYER_WALK_RIGHT_MASKS = [pygame.mask.from_surface(img) for img in PLAYER_WALK_RIGHT]
     PLAYER_WALK_LEFT_MASKS = [pygame.mask.from_surface(img) for img in PLAYER_WALK_LEFT]
     PLAYER_IDLE_MASK = pygame.mask.from_surface(PLAYER_IDLE)
@@ -613,8 +626,6 @@ def run_mode_2(player_speed, tariff_speed):
     tariffs = []
     hit = False
 
-    clock = pygame.time.Clock()
-    start_time = time.time()
 
 
     tariff_count = 0
@@ -625,6 +636,7 @@ def run_mode_2(player_speed, tariff_speed):
         dt = clock.tick(60)
         elapsed_time = time.time() - start_time
         tariff_count += dt
+        month_time = time.time() - month_start_time
 
 
         # ------------------------
@@ -723,10 +735,21 @@ def run_mode_2(player_speed, tariff_speed):
 
                 break
 
+
+        #quota
+        if month_time >= month_duration:
+            if money >= quota > 0:
+                # Player passed the month
+                month += 1
+                quota += 75  # increase difficulty
+                month_start_time = time.time()
+            else:
+                dead = True
+
         # ------------------------
         # Draw Everything
         # ------------------------
-        draw_2(player, elapsed_time, tariffs, current_player_img)
+        draw_2(player, elapsed_time, tariffs, current_player_img, money, month, quota)
         draw_health_bar(player, player_health, max_health)
         pygame.display.update()
 
