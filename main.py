@@ -26,7 +26,7 @@ TARIFF_VEL = 4
 # Fonts
 FONT_TITLE = pygame.font.SysFont("Times New Roman", 40, italic=True)
 FONT_TITLE.set_underline(True)
-FONT_BUTTONS = pygame.font.SysFont("Times New Roman", 30)
+FONT_BUTTONS = pygame.font.SysFont("Times New Roman", 40)
 
 # Images
 BG = pygame.transform.scale(pygame.image.load("bg1.png"), (WIDTH, HEIGHT))
@@ -101,7 +101,7 @@ scenario_button2 = pygame.Rect(WIDTH // 2 - 300, 450, 650, 60)
 def draw_1(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
     WIN.blit(BG, (0, 0))
     time_text = FONT_BUTTONS.render(f"Zeit: {round(elapsed_time)}s", 1, "black")
-    WIN.blit(time_text, (850, 10))
+    WIN.blit(time_text, (1700, 10))
 
     img_rect = player_img.get_rect(midbottom=player.midbottom)
     WIN.blit(player_img, img_rect.topleft)
@@ -502,7 +502,7 @@ def run_mode_1(player_speed, tariff_speed):
             trump_anim_index = 0
             trump_anim_timer = 0
 
-            for _ in range(4):
+            for _ in range(random.randint(3,4)):
                 tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH)
                 tariff_y = TRUMP_HEIGHT
                 tariffs.append(pygame.Rect(tariff_x, tariff_y, TARIFF_WIDTH, TARIFF_HEIGHT))
