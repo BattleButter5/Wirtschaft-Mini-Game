@@ -93,6 +93,8 @@ GAME2 = "game2"
 title_button = pygame.Rect(WIDTH // 2 - 200, 200, 400, 60)
 scenario_button1 = pygame.Rect(WIDTH // 2 - 300, 350, 650, 60)
 scenario_button2 = pygame.Rect(WIDTH // 2 - 300, 450, 650, 60)
+scenario_button1_img = pygame.image.load("button_pink.png").convert_alpha()
+scenario_button2_img = pygame.image.load("button_blue1.png").convert_alpha()
 
 
 # ----------------------------
@@ -143,6 +145,11 @@ def draw_menu():
 
     pygame.draw.rect(WIN, "red", scenario_button1)
     pygame.draw.rect(WIN, "blue", scenario_button2)
+
+    button_1 = pygame.transform.scale(scenario_button1_img,(1000,100))
+    WIN.blit(button_1, (WIDTH // 2 - 300, 350, 650, 60))
+    button_2 = pygame.transform.scale(scenario_button2_img, (1000, 100))
+    WIN.blit(button_2, (WIDTH // 2 - 300, 450, 650, 60))
 
     text1 = FONT_BUTTONS.render("Große Einschränkungen des weltweiten Handels", True, "white")
     text2 = FONT_BUTTONS.render("Weitgehend reibungsloser weltweiter Handel", True, "white")
