@@ -24,7 +24,7 @@ PLAYER_VEL = 5
 TARIFF_VEL = 4
 
 # Fonts
-FONT_TITLE = pygame.font.SysFont("Times New Roman", 40, italic=True)
+FONT_TITLE = pygame.font.SysFont("Times New Roman", 50, italic=True)
 FONT_TITLE.set_underline(True)
 FONT_BUTTONS = pygame.font.SysFont("Times New Roman", 40)
 
@@ -91,10 +91,8 @@ GAME2 = "game2"
 
 # Buttons
 title_button = pygame.Rect(WIDTH // 2 - 200, 200, 400, 60)
-scenario_button1 = pygame.Rect(WIDTH // 2 - 300, 350, 650, 60)
-scenario_button2 = pygame.Rect(WIDTH // 2 - 300, 450, 650, 60)
-scenario_button1_img = pygame.image.load("button_pink.png").convert_alpha()
-scenario_button2_img = pygame.image.load("button_blue1.png").convert_alpha()
+scenario_button1 = pygame.Rect(WIDTH // 2 - 350, 450, 850, 60)
+scenario_button2 = pygame.Rect(WIDTH // 2 - 350, 600, 850, 60)
 
 
 # ----------------------------
@@ -127,7 +125,7 @@ def draw_2(player, elapsed_time, tariffs, player_img, money, month, quota):
     WIN.blit(money_text, (20, 20))
     WIN.blit(month_text, (250, 20))
     WIN.blit(quota_text, (450, 20))
-    WIN.blit(time_text, (650, 20))
+    WIN.blit(time_text, (1700, 20))
 
     img_rect = player_img.get_rect(midbottom=player.midbottom)
     WIN.blit(player_img, img_rect.topleft)
@@ -145,11 +143,6 @@ def draw_menu():
 
     pygame.draw.rect(WIN, "red", scenario_button1)
     pygame.draw.rect(WIN, "blue", scenario_button2)
-
-    button_1 = pygame.transform.scale(scenario_button1_img,(1000,100))
-    WIN.blit(button_1, (WIDTH // 2 - 300, 350, 650, 60))
-    button_2 = pygame.transform.scale(scenario_button2_img, (1000, 100))
-    WIN.blit(button_2, (WIDTH // 2 - 300, 450, 650, 60))
 
     text1 = FONT_BUTTONS.render("Große Einschränkungen des weltweiten Handels", True, "white")
     text2 = FONT_BUTTONS.render("Weitgehend reibungsloser weltweiter Handel", True, "white")
