@@ -2,6 +2,7 @@ import pygame
 import time
 import random
 import webbrowser
+import os
 
 pygame.font.init()
 
@@ -94,6 +95,13 @@ title_button = pygame.Rect(WIDTH // 2 - 200, 200, 400, 60)
 scenario_button1 = pygame.Rect(WIDTH // 2 - 350, 450, 850, 60)
 scenario_button2 = pygame.Rect(WIDTH // 2 - 350, 600, 850, 60)
 
+#crates
+CRATE_IMAGES = [
+    pygame.transform.scale(pygame.image.load("crate_1.png").convert_alpha(), (40, 40)),
+    pygame.transform.scale(pygame.image.load("crate_2.png").convert_alpha(), (40, 40)),
+    pygame.transform.scale(pygame.image.load("crate_3.png").convert_alpha(), (40, 40)),
+]
+
 
 # ----------------------------
 # Drawing functions
@@ -112,8 +120,14 @@ def draw_1(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
         WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
 
 
-def draw_2(player, elapsed_time, tariffs, player_img, money, month, quota):
+def draw_2(player, elapsed_time, tariffs, player_img, money, month, quota,target, crates):
     WIN.blit(BG, (0, 0))
+
+    target.draw(WIN)
+
+    for crate in crates:
+        crate.draw(WIN)
+
     pygame.draw.rect(WIN, (30, 30, 30), (0, 0, WIDTH, UI_HEIGHT))
     pygame.draw.line(WIN, (80, 80, 80), (0, UI_HEIGHT), (WIDTH, UI_HEIGHT), 2)
 
@@ -180,7 +194,11 @@ def draw_health_bar(player_rect, health, max_health):
 
 
 def show_pdf(file_path):
-    webbrowser.open(file_path)
+    # Get the absolute path
+    pdf_path = os.path.abspath("pdf-sample_0.pdf")
+
+    # Open using file:// URL
+    webbrowser.open(f"file://{pdf_path}")
 
 #trivia function -------------------------------------
 #------------------------------------------------------
@@ -313,6 +331,42 @@ class MoneyBill(pygame.sprite.Sprite):
         if self.rect.top > HEIGHT:
             self.kill()
 
+#-------------------------
+#crates
+#----------------
+class CrateProjectile:
+    def __init__(self, x, y):
+        self.image = random.choice(CRATE_IMAGES)
+        self.rect = self.image.get_rect(midbottom=(x, y))
+        self.speed = 8
+
+    def update(self):
+        self.rect.y -= self.speed
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+
+
+#---------------------
+#targets
+#----------------------
+class ExportTarget:
+    def __init__(self):
+        self.image = pygame.Surface((120, 30))
+        self.image.fill((200, 50, 50))
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(0, WIDTH - self.rect.width)
+        self.rect.y = 120
+        self.speed = 4
+
+    def update(self):
+        self.rect.x += self.speed
+        if self.rect.left <= 0 or self.rect.right >= WIDTH:
+            self.speed *= -1
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
+
 # ----------------------------
 # Shared game loop for scenarios
 # ----------------------------
@@ -404,12 +458,12 @@ def run_mode_1(player_speed, tariff_speed):
         keys = pygame.key.get_pressed()
         moving = False
 
-        if keys[pygame.K_LEFT] and player.x - player_speed >= 0:
+        if keys[pygame.K_a] and player.x - player_speed >= 0:
             player.x -= player_speed
             facing = "left"
             moving = True
 
-        if keys[pygame.K_RIGHT] and player.x + player_speed + player.width <= WIDTH:
+        if keys[pygame.K_d] and player.x + player_speed + player.width <= WIDTH:
             player.x += player_speed
             facing = "right"
             moving = True
@@ -635,6 +689,11 @@ def run_mode_2(player_speed, tariff_speed):
     tariff_count = 0
     tariff_interval = random.randint(10000, 15000)
 
+    crates = []
+    target = ExportTarget()
+    shoot_cooldown = 500  # milliseconds
+    last_shot = 0
+
 
     while True:
         dt = clock.tick(60)
@@ -654,19 +713,32 @@ def run_mode_2(player_speed, tariff_speed):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                  return
-
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left mouse button
+                    now = pygame.time.get_ticks()
+                    if now - last_shot > shoot_cooldown:
+                        crate = CrateProjectile(player.centerx, player.top)
+                        crates.append(crate)
+                        last_shot = now
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_f:
+                    now = pygame.time.get_ticks()
+                    if now - last_shot > shoot_cooldown:
+                        crate = CrateProjectile(player.centerx, player.top)
+                        crates.append(crate)
+                        last_shot = now
         # ------------------------
         # Player Input
         # ------------------------
         keys = pygame.key.get_pressed()
         moving = False
 
-        if keys[pygame.K_LEFT] and player.x - player_speed >= 0:
+        if keys[pygame.K_a] and player.x - player_speed >= 0:
             player.x -= player_speed
             facing = "left"
             moving = True
 
-        if keys[pygame.K_RIGHT] and player.x + player_speed + player.width <= WIDTH:
+        if keys[pygame.K_d] and player.x + player_speed + player.width <= WIDTH:
             player.x += player_speed
             facing = "right"
             moving = True
@@ -754,10 +826,33 @@ def run_mode_2(player_speed, tariff_speed):
             else:
                 dead = True
 
+        # Update crates
+        for crate in crates[:]:
+            crate.update()
+
+            # Remove if off-screen
+            if crate.rect.bottom < 0:
+                crates.remove(crate)
+
+        # Update target
+        target.update()
+
+
+        #crate collision
+        for crate in crates[:]:
+            if crate.rect.colliderect(target.rect):
+                money += 25  # 💰 reward
+                crates.remove(crate)
+
         # ------------------------
         # Draw Everything
         # ------------------------
-        draw_2(player, elapsed_time, tariffs, current_player_img, money, month, quota)
+
+        draw_2(player, elapsed_time, tariffs, current_player_img, money, month, quota,target, crates)
+        #target.draw(WIN)
+
+        #for crate in crates:
+            #crate.draw(WIN)
         draw_health_bar(player, player_health, max_health)
         pygame.display.update()
 
@@ -791,7 +886,7 @@ def game_mode1():
     return run_mode_1(player_speed=8, tariff_speed=6)
 
 def game_mode2():
-    return run_mode_2(player_speed=8, tariff_speed=6)
+    return run_mode_2(player_speed=7, tariff_speed=6)
 
 # ----------------------------
 # Main Menu Loop
