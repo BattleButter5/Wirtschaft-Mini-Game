@@ -120,7 +120,7 @@ def draw_1(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
         WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
 
 
-def draw_2(player, elapsed_time, tariffs, player_img, quartal, money, quota, target, crates):
+def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target, crates):
     WIN.blit(BG, (0, 0))
 
     target.draw(WIN)
@@ -134,12 +134,11 @@ def draw_2(player, elapsed_time, tariffs, player_img, quartal, money, quota, tar
 
     quartal_text = FONT_BUTTONS.render(f"Quartal: {quartal}", True, "white")
     quota_text = FONT_BUTTONS.render("Quota: $", True, "white")
-    time_text = FONT_BUTTONS.render(f"Time: {int(elapsed_time)}s", True, "white")
-
+    time_left_text =FONT_BUTTONS.render(f"Time Left: {max(0, int(time_left))}", True, "white")
 
     WIN.blit(quartal_text, (250, 20))
     WIN.blit(quota_text, (600, 20))
-    WIN.blit(time_text, (1700, 20))
+    WIN.blit(time_left_text, (1650, 20))
     draw_quota_bar(money,quota)
 
     img_rect = player_img.get_rect(midbottom=player.midbottom)
@@ -722,9 +721,9 @@ def run_mode_2(player_speed, tariff_speed):
 
     while True:
         dt = clock.tick(60)
-        elapsed_time = time.time() - start_time
         tariff_count += dt
-        quartal_time = time.time() - quartal_start_time
+        elapsed_time = time.time() - quartal_start_time
+        time_left = quartal_duration - elapsed_time
 
 
         # ------------------------
@@ -851,7 +850,7 @@ def run_mode_2(player_speed, tariff_speed):
             money = 0
 
         #  Check if time expired
-        elif quartal_time >= quartal_duration:
+        elif time_left <= 0:
             dead = True
 
         # Update crates
@@ -876,7 +875,7 @@ def run_mode_2(player_speed, tariff_speed):
         # Draw Everything
         # ------------------------
 
-        draw_2(player, elapsed_time, tariffs, current_player_img, quartal, money, quota,target, crates)
+        draw_2(player,time_left, tariffs, current_player_img, quartal, money, quota,target, crates)
         #target.draw(WIN)
 
         #for crate in crates:
