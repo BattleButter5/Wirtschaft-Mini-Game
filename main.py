@@ -120,7 +120,7 @@ def draw_1(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
         WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
 
 
-def draw_2(player, elapsed_time, tariffs, player_img, money, month, quota,target, crates):
+def draw_2(player, elapsed_time, tariffs, player_img, quartal, money, quota, target, crates):
     WIN.blit(BG, (0, 0))
 
     target.draw(WIN)
@@ -131,15 +131,16 @@ def draw_2(player, elapsed_time, tariffs, player_img, money, month, quota,target
     pygame.draw.rect(WIN, (30, 30, 30), (0, 0, WIDTH, UI_HEIGHT))
     pygame.draw.line(WIN, (80, 80, 80), (0, UI_HEIGHT), (WIDTH, UI_HEIGHT), 2)
 
-    money_text = FONT_BUTTONS.render(f"Money: ${money}", True, "white")
-    month_text = FONT_BUTTONS.render(f"Month: {month}", True, "white")
-    quota_text = FONT_BUTTONS.render(f"Quota: ${quota}", True, "white")
+
+    quartal_text = FONT_BUTTONS.render(f"Quartal: {quartal}", True, "white")
+    quota_text = FONT_BUTTONS.render("Quota: $", True, "white")
     time_text = FONT_BUTTONS.render(f"Time: {int(elapsed_time)}s", True, "white")
 
-    WIN.blit(money_text, (20, 20))
-    WIN.blit(month_text, (250, 20))
-    WIN.blit(quota_text, (450, 20))
+
+    WIN.blit(quartal_text, (250, 20))
+    WIN.blit(quota_text, (600, 20))
     WIN.blit(time_text, (1700, 20))
+    draw_quota_bar(money,quota)
 
     img_rect = player_img.get_rect(midbottom=player.midbottom)
     WIN.blit(player_img, img_rect.topleft)
@@ -191,6 +192,30 @@ def draw_health_bar(player_rect, health, max_health):
 
     # Optional border (looks clean)
     pygame.draw.rect(WIN, (0, 0, 0), bg_rect, 1)
+
+#-------------------------------
+#quota bar
+#-------------------------------
+def draw_quota_bar(money, quota):
+    bar_width = 300
+    bar_height = 20
+    bar_x = WIDTH // 2 - bar_width // 2  -20
+    bar_y = 35
+
+    # Calculate progress ratio
+    progress = min(money / quota, 1)  # number between 0 and 1
+
+    # Background (grey)
+    bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
+    pygame.draw.rect(WIN, (50, 50, 50), bg_rect)
+
+    # Foreground (green) — multiply width by progress
+    fg_width = int(bar_width * progress)  # <-- must be a number
+    fg_rect = pygame.Rect(bar_x, bar_y, fg_width, bar_height)
+    pygame.draw.rect(WIN, (50, 200, 50), fg_rect)
+
+    # Optional border
+    pygame.draw.rect(WIN, (0,0,0), bg_rect, 2)
 
 
 def show_pdf(file_path):
@@ -649,11 +674,11 @@ def run_mode_2(player_speed, tariff_speed):
     clock = pygame.time.Clock()
     start_time = time.time()
 
-    month = 1
+    quartal = 1
     quota = 100
     money = 0
-    month_duration = 30
-    month_start_time = time.time()
+    quartal_duration = 30
+    quartal_start_time = time.time()
 
     player_vel_y = 0
     gravity = 0.5
@@ -699,7 +724,7 @@ def run_mode_2(player_speed, tariff_speed):
         dt = clock.tick(60)
         elapsed_time = time.time() - start_time
         tariff_count += dt
-        month_time = time.time() - month_start_time
+        month_time = time.time() - quartal_start_time
 
 
         # ------------------------
@@ -817,10 +842,10 @@ def run_mode_2(player_speed, tariff_speed):
 
 
         #quota
-        if month_time >= month_duration:
+        if month_time >= quartal_duration:
             if money >= quota > 0:
                 # Player passed the month
-                month += 1
+                quartal += 1
                 quota += 75  # increase difficulty
                 month_start_time = time.time()
             else:
@@ -848,7 +873,7 @@ def run_mode_2(player_speed, tariff_speed):
         # Draw Everything
         # ------------------------
 
-        draw_2(player, elapsed_time, tariffs, current_player_img, money, month, quota,target, crates)
+        draw_2(player, elapsed_time, tariffs, current_player_img, quartal, money, quota,target, crates)
         #target.draw(WIN)
 
         #for crate in crates:
