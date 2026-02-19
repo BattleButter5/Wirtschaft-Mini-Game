@@ -724,7 +724,7 @@ def run_mode_2(player_speed, tariff_speed):
         dt = clock.tick(60)
         elapsed_time = time.time() - start_time
         tariff_count += dt
-        month_time = time.time() - quartal_start_time
+        quartal_time = time.time() - quartal_start_time
 
 
         # ------------------------
@@ -840,16 +840,19 @@ def run_mode_2(player_speed, tariff_speed):
 
                 break
 
+        #  Calculate elapsed time
+        quartal_time = time.time() - quartal_start_time
 
-        #quota
-        if month_time >= quartal_duration:
-            if money >= quota > 0:
-                # Player passed the month
-                quartal += 1
-                quota += 75  # increase difficulty
-                month_start_time = time.time()
-            else:
-                dead = True
+        #   Check if quota reached
+        if money >= quota:
+            quartal += 1
+            quota += 75
+            quartal_start_time = time.time()
+            money = 0
+
+        #  Check if time expired
+        elif quartal_time >= quartal_duration:
+            dead = True
 
         # Update crates
         for crate in crates[:]:
