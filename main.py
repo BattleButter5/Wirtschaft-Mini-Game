@@ -15,6 +15,9 @@ pygame.display.set_caption("Tariff Game")
 
 UI_HEIGHT = 100
 GAME_HEIGHT = HEIGHT - UI_HEIGHT
+GAME_TOP = UI_HEIGHT
+GAME_BOTTOM_1 = HEIGHT - 40
+GAME_BOTTOM_2 = HEIGHT - 60
 
 # Player / Trump / Tariff
 PLAYER_WIDTH, PLAYER_HEIGHT = 100, 120
@@ -131,7 +134,15 @@ def draw_1(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
 
 
 def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target, crates):
+    # Decide color based on time left
+    if time_left <= 6:
+        timer_color = (255, 0, 0)  # red for last 5 seconds
+    else:
+        timer_color = (255, 255, 255)  # normal white
+
+
     WIN.blit(BG, (0, 0))
+
 
     target.draw(WIN)
 
@@ -144,7 +155,7 @@ def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target,
 
     quartal_text = FONT_BUTTONS.render(f"Quartal: {quartal}", True, "white")
     quota_text = FONT_BUTTONS.render("Quota: $", True, "white")
-    time_left_text =FONT_BUTTONS.render(f"Time Left: {max(0, int(time_left))}", True, "white")
+    time_left_text = FONT_BUTTONS.render(f"Time Left: {max(0, int(time_left))}", True, timer_color)
 
     WIN.blit(quartal_text, (250, 20))
     WIN.blit(quota_text, (600, 20))
@@ -158,7 +169,7 @@ def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target,
         WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
 
     # --- Selection Bar ---
-    bar_y = HEIGHT - 70
+    bar_y = HEIGHT - 55
 
     for i, img in enumerate(CRATE_IMAGES):
         x_pos = WIDTH // 2 - 120 + i * 120
@@ -421,7 +432,7 @@ class ExportTarget:
 
         # Draw requested crate icon above it
         crate_img = CRATE_IMAGES[self.requested_type]
-        icon_rect = crate_img.get_rect(midbottom=(self.rect.centerx, self.rect.top - 5))
+        icon_rect = crate_img.get_rect(midbottom=(self.rect.centerx, max(self.rect.top - 5, UI_HEIGHT + crate_img.get_height())))
         surface.blit(crate_img, icon_rect)
 # ----------------------------
 # Shared game loop for scenarios
@@ -549,14 +560,18 @@ def run_mode_1(player_speed, tariff_speed):
             player_vel_y = jump_strength
             on_ground = False
 
-        # Gravity
+        # gravity & floor check
         player_vel_y += gravity
         player.y += player_vel_y
-        if player.y + PLAYER_HEIGHT >= HEIGHT:
-            player.y = HEIGHT - PLAYER_HEIGHT
+
+        if player.y + PLAYER_HEIGHT > GAME_BOTTOM_1:
+            player.y = GAME_BOTTOM_1 - PLAYER_HEIGHT
             player_vel_y = 0
             on_ground = True
 
+        if player.y < GAME_TOP:
+            player.y = GAME_TOP
+            player_vel_y = 0
 
         # ------------------------
         # Trump Movement
@@ -835,14 +850,18 @@ def run_mode_2(player_speed, tariff_speed):
             player_vel_y = jump_strength
             on_ground = False
 
-        # Gravity
+            # gravity & floor check
         player_vel_y += gravity
         player.y += player_vel_y
-        if player.y + PLAYER_HEIGHT >= HEIGHT:
-            player.y = HEIGHT - PLAYER_HEIGHT
+
+        if player.y + PLAYER_HEIGHT > GAME_BOTTOM_2:
+            player.y = GAME_BOTTOM_2 - PLAYER_HEIGHT
             player_vel_y = 0
             on_ground = True
 
+        if player.y < GAME_TOP:
+            player.y = GAME_TOP
+            player_vel_y = 0
 
         # ------------------------
         # Tariff Spawning
