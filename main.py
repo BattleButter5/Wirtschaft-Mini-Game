@@ -102,6 +102,16 @@ CRATE_IMAGES = [
     pygame.transform.scale(pygame.image.load("crate_3.png").convert_alpha(), (40, 40)),
 ]
 
+# --- Crate System ---
+
+crate_types = [
+    {"name": "oil", "color": (30, 30, 30)},
+    {"name": "steel", "color": (160, 160, 160)},
+    {"name": "food", "color": (50, 200, 50)}
+]
+
+selected_crate = 0
+requested_crate = 0
 
 # ----------------------------
 # Drawing functions
@@ -146,6 +156,17 @@ def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target,
 
     for tariff in tariffs:
         WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
+
+    # --- Selection Bar ---
+    bar_y = HEIGHT - 70
+
+    for i, img in enumerate(CRATE_IMAGES):
+        x_pos = WIDTH // 2 - 120 + i * 120
+
+        border_color = (255, 255, 0) if i == selected_crate else (100, 100, 100)
+
+        pygame.draw.rect(WIN, border_color, (x_pos, bar_y, 50, 50), 3)
+        WIN.blit(img, (x_pos + 5, bar_y + 5))
 
 
 
@@ -359,8 +380,9 @@ class MoneyBill(pygame.sprite.Sprite):
 #crates
 #----------------
 class CrateProjectile:
-    def __init__(self, x, y):
-        self.image = random.choice(CRATE_IMAGES)
+    def __init__(self, x, y, crate_type):
+        self.type = crate_type
+        self.image = CRATE_IMAGES[crate_type]
         self.rect = self.image.get_rect(midbottom=(x, y))
         self.speed = 8
 
@@ -377,11 +399,15 @@ class CrateProjectile:
 class ExportTarget:
     def __init__(self):
         self.image = pygame.Surface((120, 30))
-        self.image.fill((200, 50, 50))
         self.rect = self.image.get_rect()
-        self.rect.x = random.randint(0, WIDTH - self.rect.width)
         self.rect.y = 120
         self.speed = 4
+
+        self.new_request()
+
+    def new_request(self):
+        self.requested_type = random.randint(0, len(CRATE_IMAGES) - 1)
+        self.rect.x = random.randint(0, WIDTH - self.rect.width)
 
     def update(self):
         self.rect.x += self.speed
@@ -389,8 +415,14 @@ class ExportTarget:
             self.speed *= -1
 
     def draw(self, surface):
+        # Draw base target
+        self.image.fill((200, 50, 50))
         surface.blit(self.image, self.rect)
 
+        # Draw requested crate icon above it
+        crate_img = CRATE_IMAGES[self.requested_type]
+        icon_rect = crate_img.get_rect(midbottom=(self.rect.centerx, self.rect.top - 5))
+        surface.blit(crate_img, icon_rect)
 # ----------------------------
 # Shared game loop for scenarios
 # ----------------------------
@@ -717,7 +749,7 @@ def run_mode_2(player_speed, tariff_speed):
     target = ExportTarget()
     shoot_cooldown = 500  # milliseconds
     last_shot = 0
-
+    global selected_crate
 
     while True:
         dt = clock.tick(60)
@@ -741,16 +773,27 @@ def run_mode_2(player_speed, tariff_speed):
                 if event.button == 1:  # Left mouse button
                     now = pygame.time.get_ticks()
                     if now - last_shot > shoot_cooldown:
-                        crate = CrateProjectile(player.centerx, player.top)
+                        crate = CrateProjectile(player.centerx, player.top,selected_crate)
                         crates.append(crate)
                         last_shot = now
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_f:
                     now = pygame.time.get_ticks()
                     if now - last_shot > shoot_cooldown:
-                        crate = CrateProjectile(player.centerx, player.top)
+                        crate = CrateProjectile(player.centerx, player.top,selected_crate)
                         crates.append(crate)
                         last_shot = now
+            if event.type == pygame.MOUSEWHEEL:
+                selected_crate += event.y
+                selected_crate %= len(CRATE_IMAGES)
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    selected_crate = 0
+                if event.key == pygame.K_2 and len(CRATE_IMAGES) > 1:
+                    selected_crate = 1
+                if event.key == pygame.K_3 and len(CRATE_IMAGES) > 2:
+                    selected_crate = 2
         # ------------------------
         # Player Input
         # ------------------------
@@ -868,9 +911,14 @@ def run_mode_2(player_speed, tariff_speed):
         #crate collision
         for crate in crates[:]:
             if crate.rect.colliderect(target.rect):
-                money += 25  # 💰 reward
-                crates.remove(crate)
 
+                if crate.type == target.requested_type:
+                    money += 25
+                    target.new_request()
+                else:
+                    money -= 10  # optional penalty
+
+                crates.remove(crate)
         # ------------------------
         # Draw Everything
         # ------------------------
