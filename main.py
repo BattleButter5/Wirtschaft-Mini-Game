@@ -133,12 +133,17 @@ def draw_1(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
         WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
 
 
-def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target, crates):
+def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target, crates, combo):
     # Decide color based on time left
     if time_left <= 6:
         timer_color = (255, 0, 0)  # red for last 5 seconds
     else:
         timer_color = (255, 255, 255)  # normal white
+
+    if combo >= 3:
+        combo_color = (255, 140, 0)
+    else:
+        combo_color = (255, 255, 255)
 
 
     WIN.blit(BG, (0, 0))
@@ -156,10 +161,12 @@ def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target,
     quartal_text = FONT_BUTTONS.render(f"Quartal: {quartal}", True, "white")
     quota_text = FONT_BUTTONS.render("Quota: $", True, "white")
     time_left_text = FONT_BUTTONS.render(f"Time Left: {max(0, int(time_left))}", True, timer_color)
+    combo_text = FONT_BUTTONS.render(f"Combo: {combo}", True, combo_color)
 
-    WIN.blit(quartal_text, (250, 20))
+    WIN.blit(quartal_text, (150, 20))
     WIN.blit(quota_text, (600, 20))
     WIN.blit(time_left_text, (1650, 20))
+    WIN.blit(combo_text, (1350, 20))
     draw_quota_bar(money,quota)
 
     img_rect = player_img.get_rect(midbottom=player.midbottom)
@@ -737,6 +744,10 @@ def run_mode_2(player_speed, tariff_speed):
     dead = False
     first_death = True
 
+    combo = 0
+    base_reward = 25
+    base_multiplier_cap = 2.0  # starting max multiplier
+
     # ------------------------
     # Player animation state
     # ------------------------
@@ -771,6 +782,7 @@ def run_mode_2(player_speed, tariff_speed):
         tariff_count += dt
         elapsed_time = time.time() - quartal_start_time
         time_left = quartal_duration - elapsed_time
+        multiplier_cap = base_multiplier_cap + (quartal - 1) * 0.5
 
 
         # ------------------------
@@ -921,6 +933,7 @@ def run_mode_2(player_speed, tariff_speed):
 
             # Remove if off-screen
             if crate.rect.bottom < 0:
+                combo = 0
                 crates.remove(crate)
 
         # Update target
@@ -932,9 +945,17 @@ def run_mode_2(player_speed, tariff_speed):
             if crate.rect.colliderect(target.rect):
 
                 if crate.type == target.requested_type:
-                    money += 25
+                    combo += 1
+
+                    multiplier = 1 + combo * 0.2
+                    multiplier = min(multiplier, multiplier_cap)
+                    reward = int(base_reward * multiplier)
+
+                    money += reward
                     target.new_request()
+
                 else:
+                    combo = 0
                     money -= 10  # optional penalty
 
                 crates.remove(crate)
@@ -942,7 +963,7 @@ def run_mode_2(player_speed, tariff_speed):
         # Draw Everything
         # ------------------------
 
-        draw_2(player,time_left, tariffs, current_player_img, quartal, money, quota,target, crates)
+        draw_2(player,time_left, tariffs, current_player_img, quartal, money, quota,target, crates, combo)
         #target.draw(WIN)
 
         #for crate in crates:
