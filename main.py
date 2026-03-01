@@ -1,8 +1,11 @@
 import pygame
 import time
 import random
-import webbrowser
 import os
+import json
+import subprocess
+#import sys
+#import webbrowser
 
 pygame.font.init()
 
@@ -36,6 +39,7 @@ FONT_BUTTONS = pygame.font.SysFont("Times New Roman", 40)
 BG = pygame.transform.scale(pygame.image.load("bg1.png"), (WIDTH, HEIGHT))
 TARIFF_IMG = pygame.transform.scale(pygame.image.load("tariff.png"), (TARIFF_WIDTH, TARIFF_HEIGHT))
 LIEFERENGPASS_IMG = pygame.image.load("Lieferengpass.png").convert_alpha()
+HIGHSCORE_FILE = "highscores.json"
 
 TRUMP_IDLE = pygame.transform.scale(
     pygame.image.load("trump_1.png").convert_alpha(),
@@ -191,6 +195,7 @@ def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target,
 
 
 def draw_menu():
+    highscores = load_highscores()
     WIN.blit(BG, (0, 0))
     title = FONT_TITLE.render("Wähle dein Szenario", True, "black")
     WIN.blit(title, (WIDTH//2 - title.get_width()//2, 200))
@@ -200,8 +205,13 @@ def draw_menu():
 
     text1 = FONT_BUTTONS.render("Große Einschränkungen des weltweiten Handels", True, "white")
     text2 = FONT_BUTTONS.render("Weitgehend reibungsloser weltweiter Handel", True, "white")
-    WIN.blit(text1, (scenario_button1.x + 20, scenario_button1.y + 15))
-    WIN.blit(text2, (scenario_button2.x + 20, scenario_button2.y + 15))
+    high_score_text1 = FONT_BUTTONS.render(f"Highscore: {highscores['mode1']}s", True, "black")
+    high_score_text2 = FONT_BUTTONS.render(f"Highscore:Q {highscores['mode2']}", True, "black")
+
+    WIN.blit(high_score_text1, (scenario_button1.x + 900, scenario_button1.y + 6 ))
+    WIN.blit(high_score_text2, (scenario_button2.x + 900, scenario_button2.y + 6 ))
+    WIN.blit(text1, (scenario_button1.x + 15, scenario_button1.y + 8))
+    WIN.blit(text2, (scenario_button2.x + 15, scenario_button2.y + 8))
 
     pygame.display.update()
 
@@ -259,10 +269,9 @@ def draw_quota_bar(money, quota):
 
 def show_pdf(file_path):
     # Get the absolute path
-    pdf_path = os.path.abspath("pdf-sample_0.pdf")
+    subprocess.run(["start", "pdf-sample_0.pdf"], shell=True)  # Windows
 
-    # Open using file:// URL
-    webbrowser.open(f"file://{pdf_path}")
+
 
 #trivia function -------------------------------------
 #------------------------------------------------------
@@ -372,6 +381,20 @@ def show_game_over_screen():
 
     pygame.display.update()
     pygame.time.delay(3000)  # wait 3 seconds before quitting
+
+# Load highscores or create default if file doesn't exist
+def load_highscores():
+    if os.path.exists(HIGHSCORE_FILE):
+        with open(HIGHSCORE_FILE, "r") as f:
+            return json.load(f)
+    else:
+        # default highscores for mode1 and mode2
+        return {"mode1": 0, "mode2": 0}
+
+# Save highscores to file
+def save_highscores(highscores):
+    with open(HIGHSCORE_FILE, "w") as f:
+        json.dump(highscores, f)
 
 #----------------------------------------
 class MoneyBill(pygame.sprite.Sprite):
@@ -762,11 +785,25 @@ def run_mode_1(player_speed, tariff_speed):
                 else:
                     # permanent game over → back to menu
                     show_game_over_screen()
+                    # --- HIGH SCORE UPDATE ---
+                    highscores = load_highscores()
+                    if elapsed_time > highscores["mode1"]:
+                        highscores["mode1"] = round(elapsed_time)
+                        save_highscores(highscores)
+                    # --------------------------
+
                     return "menu"
 
             else:
                 # SECOND DEATH → permanent game over
                 show_game_over_screen()
+                # --- HIGH SCORE UPDATE ---
+                highscores = load_highscores()
+                if elapsed_time > highscores["mode1"]:
+                    highscores["mode1"] = round(elapsed_time)
+                    save_highscores(highscores)
+                # --------------------------
+
                 return "menu"
 
 #------------------------------------------------
@@ -1067,11 +1104,23 @@ def run_mode_2(player_speed, tariff_speed):
                 else:
                     # permanent game over → back to menu
                     show_game_over_screen()
+
+                    highscores = load_highscores()
+                    if quartal > highscores["mode2"]:
+                        highscores["mode2"] = quartal
+                        save_highscores(highscores)
+
                     return "menu"
 
             else:
                 # SECOND DEATH → permanent game over
                 show_game_over_screen()
+
+                highscores = load_highscores()
+                if quartal > highscores["mode2"]:
+                    highscores["mode2"] = quartal
+                    save_highscores(highscores)
+
                 return "menu"
 
 # ----------------------------
