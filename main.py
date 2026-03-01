@@ -398,11 +398,11 @@ class MoneyBill(pygame.sprite.Sprite):
 #crates
 #----------------
 class CrateProjectile:
-    def __init__(self, x, y, crate_type):
+    def __init__(self, x, y, crate_type,speed):
         self.type = crate_type
         self.image = CRATE_IMAGES[crate_type]
         self.rect = self.image.get_rect(midbottom=(x, y))
-        self.speed = 8
+        self.speed = speed
 
     def update(self):
         self.rect.y -= self.speed
@@ -415,11 +415,13 @@ class CrateProjectile:
 #targets
 #----------------------
 class ExportTarget:
-    def __init__(self):
+    def __init__(self, speed):
         self.image = pygame.Surface((120, 30))
         self.rect = self.image.get_rect()
         self.rect.y = 120
-        self.speed = 4
+
+        self.base_speed = speed
+        self.direction = 1   # 1 = right, -1 = left
 
         self.new_request()
 
@@ -428,9 +430,15 @@ class ExportTarget:
         self.rect.x = random.randint(0, WIDTH - self.rect.width)
 
     def update(self):
-        self.rect.x += self.speed
-        if self.rect.left <= 0 or self.rect.right >= WIDTH:
-            self.speed *= -1
+        self.rect.x += self.base_speed * self.direction
+
+        if self.rect.left <= 0:
+            self.rect.left = 0
+            self.direction = 1
+
+        elif self.rect.right >= WIDTH:
+            self.rect.right = WIDTH
+            self.direction = -1
 
     def draw(self, surface):
         # Draw base target
@@ -733,6 +741,9 @@ def run_mode_2(player_speed, tariff_speed):
     quartal_duration = 30
     quartal_start_time = time.time()
 
+    base_crate_speed = 8
+    base_target_speed = 4
+
     player_vel_y = 0
     gravity = 0.5
     jump_strength = -10
@@ -772,7 +783,7 @@ def run_mode_2(player_speed, tariff_speed):
     tariff_interval = random.randint(10000, 15000)
 
     crates = []
-    target = ExportTarget()
+    target = ExportTarget(base_target_speed)
     shoot_cooldown = 500  # milliseconds
     last_shot = 0
     global selected_crate
@@ -783,6 +794,9 @@ def run_mode_2(player_speed, tariff_speed):
         elapsed_time = time.time() - quartal_start_time
         time_left = quartal_duration - elapsed_time
         multiplier_cap = base_multiplier_cap + (quartal - 1) * 0.5
+        crate_speed = min(base_crate_speed + (quartal - 1) * 0.5, 7)
+        target_speed = min(base_target_speed + (quartal - 1) * 0.4, 8)
+        target.base_speed = target_speed
 
 
         # ------------------------
@@ -800,14 +814,14 @@ def run_mode_2(player_speed, tariff_speed):
                 if event.button == 1:  # Left mouse button
                     now = pygame.time.get_ticks()
                     if now - last_shot > shoot_cooldown:
-                        crate = CrateProjectile(player.centerx, player.top,selected_crate)
+                        crate = CrateProjectile(player.centerx, player.top,selected_crate, crate_speed)
                         crates.append(crate)
                         last_shot = now
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_f:
                     now = pygame.time.get_ticks()
                     if now - last_shot > shoot_cooldown:
-                        crate = CrateProjectile(player.centerx, player.top,selected_crate)
+                        crate = CrateProjectile(player.centerx, player.top,selected_crate,crate_speed)
                         crates.append(crate)
                         last_shot = now
             if event.type == pygame.MOUSEWHEEL:
@@ -862,7 +876,7 @@ def run_mode_2(player_speed, tariff_speed):
             player_vel_y = jump_strength
             on_ground = False
 
-            # gravity & floor check
+        # gravity & floor check
         player_vel_y += gravity
         player.y += player_vel_y
 
@@ -919,7 +933,7 @@ def run_mode_2(player_speed, tariff_speed):
         #   Check if quota reached
         if money >= quota:
             quartal += 1
-            quota += 75
+            quota += 50
             quartal_start_time = time.time()
             money = 0
 
