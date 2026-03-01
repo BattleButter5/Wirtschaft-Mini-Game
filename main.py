@@ -35,6 +35,7 @@ FONT_BUTTONS = pygame.font.SysFont("Times New Roman", 40)
 # Images
 BG = pygame.transform.scale(pygame.image.load("bg1.png"), (WIDTH, HEIGHT))
 TARIFF_IMG = pygame.transform.scale(pygame.image.load("tariff.png"), (TARIFF_WIDTH, TARIFF_HEIGHT))
+LIEFERENGPASS_IMG = pygame.image.load("Lieferengpass.png").convert_alpha()
 
 TRUMP_IDLE = pygame.transform.scale(
     pygame.image.load("trump_1.png").convert_alpha(),
@@ -398,11 +399,12 @@ class MoneyBill(pygame.sprite.Sprite):
 #crates
 #----------------
 class CrateProjectile:
-    def __init__(self, x, y, crate_type,speed):
+    def __init__(self, x, y, crate_type):
         self.type = crate_type
         self.image = CRATE_IMAGES[crate_type]
         self.rect = self.image.get_rect(midbottom=(x, y))
-        self.speed = speed
+        self.normal_speed = 8
+        self.speed = self.normal_speed
 
     def update(self):
         self.rect.y -= self.speed
@@ -416,7 +418,7 @@ class CrateProjectile:
 #----------------------
 class ExportTarget:
     def __init__(self, speed):
-        self.image = pygame.Surface((120, 30))
+        self.image = pygame.Surface((250, 30))
         self.rect = self.image.get_rect()
         self.rect.y = 120
 
@@ -449,6 +451,49 @@ class ExportTarget:
         crate_img = CRATE_IMAGES[self.requested_type]
         icon_rect = crate_img.get_rect(midbottom=(self.rect.centerx, max(self.rect.top - 5, UI_HEIGHT + crate_img.get_height())))
         surface.blit(crate_img, icon_rect)
+
+#--------------------------------------
+#Lieferengpass
+#-------------------------------------
+
+class BottleneckZone:
+    def __init__(self, y_pos):
+        self.image = LIEFERENGPASS_IMG
+        self.rect = self.image.get_rect(midtop=(WIDTH//2, y_pos))
+        self.active = False        # starts invisible
+        self.direction = 1         # 1 = right, -1 = left
+        self.speed = 2             # horizontal movement speed
+
+    def activate(self):
+        self.active = True
+        # Optionally randomize starting x
+        self.rect.x = random.randint(0, WIDTH - self.rect.width)
+
+    def deactivate(self):
+        self.active = False
+
+    def update(self):
+        if not self.active:
+            return
+        # Move horizontally
+        self.rect.x += self.speed * self.direction
+        # Bounce off edges
+        if self.rect.left <= 0:
+            self.rect.left = 0
+            self.direction = 1
+        elif self.rect.right >= WIDTH:
+            self.rect.right = WIDTH
+            self.direction = -1
+
+    def draw(self, surface):
+        if self.active:
+            surface.blit(self.image, self.rect)
+            # Draw text "Lieferengpass" in red on top
+            font = pygame.font.SysFont("Arial", 28, bold=True)
+            text_surf = font.render("Lieferengpass", True, (255, 0, 0))
+            text_rect = text_surf.get_rect(center=self.rect.center)
+            surface.blit(text_surf, text_rect)
+
 # ----------------------------
 # Shared game loop for scenarios
 # ----------------------------
@@ -759,6 +804,12 @@ def run_mode_2(player_speed, tariff_speed):
     base_reward = 25
     base_multiplier_cap = 2.0  # starting max multiplier
 
+    bottleneck = BottleneckZone(y_pos=HEIGHT // 2)  # adjust Y as you like
+    bottleneck_timer = 0
+    bottleneck_interval = random.randint(10000, 20000)  # how often it appears
+    bottleneck_duration = 8000  # ms
+    bottleneck_active_time = 0
+
     # ------------------------
     # Player animation state
     # ------------------------
@@ -791,6 +842,7 @@ def run_mode_2(player_speed, tariff_speed):
     while True:
         dt = clock.tick(60)
         tariff_count += dt
+        bottleneck_timer += dt
         elapsed_time = time.time() - quartal_start_time
         time_left = quartal_duration - elapsed_time
         multiplier_cap = base_multiplier_cap + (quartal - 1) * 0.5
@@ -814,14 +866,14 @@ def run_mode_2(player_speed, tariff_speed):
                 if event.button == 1:  # Left mouse button
                     now = pygame.time.get_ticks()
                     if now - last_shot > shoot_cooldown:
-                        crate = CrateProjectile(player.centerx, player.top,selected_crate, crate_speed)
+                        crate = CrateProjectile(player.centerx, player.top,selected_crate)
                         crates.append(crate)
                         last_shot = now
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_f:
                     now = pygame.time.get_ticks()
                     if now - last_shot > shoot_cooldown:
-                        crate = CrateProjectile(player.centerx, player.top,selected_crate,crate_speed)
+                        crate = CrateProjectile(player.centerx, player.top,selected_crate)
                         crates.append(crate)
                         last_shot = now
             if event.type == pygame.MOUSEWHEEL:
@@ -956,32 +1008,46 @@ def run_mode_2(player_speed, tariff_speed):
 
         #crate collision
         for crate in crates[:]:
-            if crate.rect.colliderect(target.rect):
+            if bottleneck.active and crate.rect.colliderect(bottleneck.rect):
+                crate.speed = crate.normal_speed * 0.4  # slow it
+                crate.rect.x += random.randint(-2, 2)  # wiggle
+            else:
+                crate.speed = crate.normal_speed  # reset normal speed
 
+            # Then check target collision
+            if crate.rect.colliderect(target.rect):
                 if crate.type == target.requested_type:
                     combo += 1
-
-                    multiplier = 1 + combo * 0.2
-                    multiplier = min(multiplier, multiplier_cap)
-                    reward = int(base_reward * multiplier)
-
-                    money += reward
+                    # apply combo multiplier
+                    multiplier = 1 + min(combo * 0.25, multiplier_cap)
+                    money += int(base_reward * multiplier)
                     target.new_request()
-
                 else:
                     combo = 0
                     money -= 10  # optional penalty
-
                 crates.remove(crate)
+
+        # Only start appearing in quartal 3+
+        if quartal >= 3:
+            if not bottleneck.active and bottleneck_timer > bottleneck_interval:
+                bottleneck.activate()
+                bottleneck_active_time = 0
+                bottleneck_timer = 0
+
+            if bottleneck.active:
+                bottleneck_active_time += dt
+                if bottleneck_active_time > bottleneck_duration:
+                    bottleneck.deactivate()
+                    bottleneck_timer = 0
+                    bottleneck_interval = random.randint(15000, 25000)  # next random spawn
+
         # ------------------------
         # Draw Everything
         # ------------------------
 
         draw_2(player,time_left, tariffs, current_player_img, quartal, money, quota,target, crates, combo)
-        #target.draw(WIN)
-
-        #for crate in crates:
-            #crate.draw(WIN)
+        bottleneck.update()
+        bottleneck.draw(WIN)
         draw_health_bar(player, player_health, max_health)
         pygame.display.update()
 
@@ -1015,7 +1081,7 @@ def game_mode1():
     return run_mode_1(player_speed=8, tariff_speed=6)
 
 def game_mode2():
-    return run_mode_2(player_speed=7, tariff_speed=6)
+    return run_mode_2(player_speed=8, tariff_speed=6)
 
 # ----------------------------
 # Main Menu Loop
