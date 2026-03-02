@@ -411,8 +411,6 @@ def ask_trivia(questions):
 
 last_pack = None
 
-import random
-
 def revive_player(max_health, revive_packs):
     global last_pack
 
@@ -527,10 +525,31 @@ class ExportTarget:
         self.base_speed = speed
         self.direction = 1   # 1 = right, -1 = left
 
+        self.last_type = None         # previous requested crate
+        self.repeat_count = 0         # how many times it repeated consecutively
+        self.max_repeats = 2          # allow at most 2 times in a row
+
         self.new_request()
 
     def new_request(self):
-        self.requested_type = random.randint(0, len(CRATE_IMAGES) - 1)
+        available_types = list(range(len(CRATE_IMAGES)))
+
+        # If last type repeated max times, remove it from choices
+        if self.repeat_count >= self.max_repeats and self.last_type is not None:
+            available_types.remove(self.last_type)
+
+        # pick new requested type
+        self.requested_type = random.choice(available_types)
+
+        # update repeat count
+        if self.requested_type == self.last_type:
+            self.repeat_count += 1
+        else:
+            self.repeat_count = 1  # first time in a new streak
+
+        self.last_type = self.requested_type
+
+        # random horizontal position
         self.rect.x = random.randint(0, WIDTH - self.rect.width)
 
     def update(self):
@@ -885,7 +904,7 @@ def run_mode_1(player_speed, tariff_speed):
                     "x": rect.centerx,
                     "y": rect.bottom,
                     "radius": 0,
-                    "max_radius": 120,
+                    "max_radius": 150,
                     "duration": 300,  # ms
                     "elapsed": 0
                 })
@@ -1029,6 +1048,15 @@ def run_mode_2(player_speed, tariff_speed):
     player_health = 3
     max_health = 3
 
+    dash_speed = 20
+    dash_duration = 150  # milliseconds
+    dash_cooldown = 1500  # milliseconds
+
+    is_dashing = False
+    dash_timer = 0
+    last_dash_time = 0
+    invincible = False
+
     dead = False
     first_death = True
 
@@ -1119,19 +1147,31 @@ def run_mode_2(player_speed, tariff_speed):
                     selected_crate = 1
                 if event.key == pygame.K_3 and len(CRATE_IMAGES) > 2:
                     selected_crate = 2
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LSHIFT:
+                    now = pygame.time.get_ticks()
+                    if now - last_dash_time > dash_cooldown:
+                        is_dashing = True
+                        invincible = True
+                        dash_timer = 0
+                        last_dash_time = now
+
         # ------------------------
         # Player Input
         # ------------------------
         keys = pygame.key.get_pressed()
         moving = False
 
-        if keys[pygame.K_a] and player.x - player_speed >= 0:
-            player.x -= player_speed
+        current_speed = dash_speed if is_dashing else player_speed
+
+        if keys[pygame.K_a] and player.x - current_speed >= 0:
+            player.x -= current_speed
             facing = "left"
             moving = True
 
-        if keys[pygame.K_d] and player.x + player_speed + player.width <= WIDTH:
-            player.x += player_speed
+        if keys[pygame.K_d] and player.x + current_speed + player.width <= WIDTH:
+            player.x += current_speed
             facing = "right"
             moving = True
 
@@ -1173,6 +1213,13 @@ def run_mode_2(player_speed, tariff_speed):
             player.y = GAME_TOP
             player_vel_y = 0
 
+        if is_dashing:
+            dash_timer += dt
+            if dash_timer >= dash_duration:
+                is_dashing = False
+                invincible = False
+
+
         # ------------------------
         # Tariff Spawning
         # ------------------------
@@ -1197,7 +1244,7 @@ def run_mode_2(player_speed, tariff_speed):
                 continue
 
             offset = (tariff.x - player_img_rect.x, tariff.y - player_img_rect.y)
-            if current_mask.overlap(TARIFF_MASK, offset):
+            if not invincible and current_mask.overlap(TARIFF_MASK, offset):
                 player_health -= 1
                 tariffs.remove(tariff)
 
