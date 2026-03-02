@@ -557,6 +557,8 @@ def run_mode_1(player_speed, tariff_speed):
     money_timer = 0
     money_interval = random.randint(14000, 20000)
 
+    explosions = []
+
     # ------------------------
     # Player animation state
     # ------------------------
@@ -630,6 +632,8 @@ def run_mode_1(player_speed, tariff_speed):
                         invincible = True
                         dash_timer = 0
                         last_dash_time = now
+            if event.type == pygame.USEREVENT + 1:
+                invincible = False  # reset after 200ms
 
         # ------------------------
         # Player Input
@@ -787,17 +791,19 @@ def run_mode_1(player_speed, tariff_speed):
 
             if t_type == "heavy" and rect.bottom >= GAME_BOTTOM_1 and not tariff["shockwave"]:
                 tariff["shockwave"] = True
+                explosions.append({
+                    "x": rect.centerx,
+                    "y": rect.bottom,
+                    "radius": 0,
+                    "max_radius": 120,
+                    "duration": 300,  # ms
+                    "elapsed": 0
+                })
+                # Remove tariff immediately
+                tariffs.remove(tariff)
+                continue
 
-                # Shockwave damage check
-                shockwave_radius = 120
-                player_center = player.centerx
-                if abs(player_center - rect.centerx) < shockwave_radius:
-                    if not invincible:
-                        player_health -= 1
-                        if player_health <= 0:
-                            dead = True
-
-            if rect.y > HEIGHT:
+            if rect.y > HEIGHT - 60:
                 tariffs.remove(tariff)
                 continue
 
@@ -826,6 +832,7 @@ def run_mode_1(player_speed, tariff_speed):
                     player_health = max_health
                 bill.kill()
 
+
         # ------------------------
         # Draw Everything
         # ------------------------
@@ -833,6 +840,39 @@ def run_mode_1(player_speed, tariff_speed):
         draw_health_bar(player, player_health, max_health)
         money_bills.update(dt)
         money_bills.draw(WIN)
+
+
+        # Update explosions
+        for exp in explosions[:]:
+            exp["elapsed"] += dt
+            # Increase radius smoothly
+            exp["radius"] = exp["max_radius"] * (exp["elapsed"] / exp["duration"])
+
+            # Draw explosion (red circle with fading alpha)
+            alpha = max(0, 255 * (1 - exp["elapsed"] / exp["duration"]))
+            surface = pygame.Surface((exp["radius"] * 2, exp["radius"] * 2), pygame.SRCALPHA)
+            pygame.draw.circle(surface, (255, 50, 0, int(alpha)), (int(exp["radius"]), int(exp["radius"])),
+                               int(exp["radius"]))
+            WIN.blit(surface, (exp["x"] - exp["radius"], exp["y"] - exp["radius"]))
+
+            # Check shockwave damage
+            player_center = player.center
+            dx = player_center[0] - exp["x"]
+            dy = player_center[1] - exp["y"]
+            distance = (dx ** 2 + dy ** 2) ** 0.5
+
+            if distance <= exp["radius"] and not invincible:
+                player_health -= 1
+                invincible = True  # optional: give short invincibility after hit
+                pygame.time.set_timer(pygame.USEREVENT + 1, 200)  # remove invincibility after 200ms
+
+            if exp["elapsed"] >= exp["duration"]:
+                explosions.remove(exp)
+            if player_health <= 0:
+                dead = True
+
+            break
+
         pygame.display.update()
 
         if dead:
