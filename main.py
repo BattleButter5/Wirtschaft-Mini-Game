@@ -25,7 +25,9 @@ GAME_BOTTOM_2 = HEIGHT - 60
 # Player / Trump / Tariff
 PLAYER_WIDTH, PLAYER_HEIGHT = 100, 120
 TRUMP_WIDTH, TRUMP_HEIGHT = 105, 125
-TARIFF_WIDTH, TARIFF_HEIGHT = 35, 35
+TARIFF_WIDTH_1, TARIFF_HEIGHT_1 = 35, 35
+TARIFF_WIDTH_2, TARIFF_HEIGHT_2 = 50, 50
+TARIFF_WIDTH_3, TARIFF_HEIGHT_3 = 28, 28
 
 PLAYER_VEL = 5
 TARIFF_VEL = 4
@@ -37,9 +39,40 @@ FONT_BUTTONS = pygame.font.SysFont("Times New Roman", 40)
 
 # Images
 BG = pygame.transform.scale(pygame.image.load("bg1.png"), (WIDTH, HEIGHT))
-TARIFF_IMG = pygame.transform.scale(pygame.image.load("tariff.png"), (TARIFF_WIDTH, TARIFF_HEIGHT))
 LIEFERENGPASS_IMG = pygame.image.load("Lieferengpass.png").convert_alpha()
 HIGHSCORE_FILE = "highscores.json"
+
+# Load tariff sprites
+TARIFF_LIGHT_RED = pygame.image.load("tariff_light_red.png").convert_alpha()
+TARIFF_DARK_RED = pygame.image.load("tariff_dark_red.png").convert_alpha()
+TARIFF_ORANGE = pygame.image.load("tariff_orange.png").convert_alpha()
+
+# Optional: scale them to your standard tariff size
+TARIFF_LIGHT_RED = pygame.transform.scale(TARIFF_LIGHT_RED, (TARIFF_WIDTH_1, TARIFF_HEIGHT_1))
+TARIFF_DARK_RED = pygame.transform.scale(TARIFF_DARK_RED, (TARIFF_WIDTH_2, TARIFF_HEIGHT_2))
+TARIFF_ORANGE = pygame.transform.scale(TARIFF_ORANGE, (TARIFF_WIDTH_3, TARIFF_HEIGHT_3))
+
+# Tariff type info
+TARIFF_TYPES = {
+    "normal": {
+        "img": TARIFF_LIGHT_RED,
+        "width": TARIFF_WIDTH_1,
+        "height": TARIFF_HEIGHT_1,
+        "mask": pygame.mask.from_surface(TARIFF_LIGHT_RED)
+    },
+    "fast": {
+        "img": TARIFF_ORANGE,
+        "width": TARIFF_WIDTH_3,
+        "height": TARIFF_HEIGHT_3,
+        "mask": pygame.mask.from_surface(TARIFF_ORANGE)
+    },
+    "heavy": {
+        "img": TARIFF_DARK_RED,
+        "width": TARIFF_WIDTH_2,
+        "height": TARIFF_HEIGHT_2,
+        "mask": pygame.mask.from_surface(TARIFF_DARK_RED)
+    }
+}
 
 TRUMP_IDLE = pygame.transform.scale(
     pygame.image.load("trump_1.png").convert_alpha(),
@@ -91,7 +124,7 @@ PLAYER_DEAD = pygame.transform.scale(
     (PLAYER_WIDTH, PLAYER_HEIGHT)
 )
 
-TARIFF_MASK = pygame.mask.from_surface(TARIFF_IMG)
+TARIFF_MASK = pygame.mask.from_surface(TARIFF_LIGHT_RED)
 
 # Game States
 MENU = "menu"
@@ -135,13 +168,7 @@ def draw_1(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
     WIN.blit(current_trump_img, (trump.x, trump.y))
 
     for tariff in tariffs:
-        rect = tariff["rect"]
-        if tariff["type"] == "heavy":
-            pygame.draw.rect(WIN, (120, 0, 0), rect)  # dark red
-        elif tariff["type"] == "fast":
-            pygame.draw.rect(WIN,  (255, 165, 0, 255), rect)  # yellow
-        else:
-            WIN.blit(TARIFF_IMG, (rect.x, rect.y))
+        WIN.blit(tariff["img"], (tariff["rect"].x, tariff["rect"].y))
 
 
 def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target, crates, combo):
@@ -184,7 +211,7 @@ def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target,
     WIN.blit(player_img, img_rect.topleft)
 
     for tariff in tariffs:
-        WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
+        WIN.blit(TARIFF_LIGHT_RED, (tariff.x, tariff.y))
 
     # --- Selection Bar ---
     bar_y = HEIGHT - 55
@@ -751,19 +778,36 @@ def run_mode_1(player_speed, tariff_speed):
         if now - last_tariff_spawn > TARIFF_INTERVAL:
             last_tariff_spawn = now
 
+            # Spawn 2–4 normal tariffs
             for _ in range(random.randint(3, 4)):
-                tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH)
+                tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH_1)
                 tariff_y = TRUMP_HEIGHT
-
-                tariff_type = random.choices(
-                    ["normal", "fast", "heavy"],
-                    weights=[60, 25, 15]
-                )[0]
-
                 tariffs.append({
-                    "rect": pygame.Rect(tariff_x, tariff_y, TARIFF_WIDTH, TARIFF_HEIGHT),
-                    "type": tariff_type,
-                    "shockwave": False
+                    "rect": pygame.Rect(tariff_x, tariff_y, TARIFF_WIDTH_1, TARIFF_HEIGHT_1),
+                    "type": "normal",
+                    "shockwave": False,
+                    "img": TARIFF_LIGHT_RED,
+                    "mask": TARIFF_MASK
+                })
+
+            # Spawn 1–2 special tariffs
+            for _ in range(random.randint(1, 2)):
+                special_type = random.choices(["fast", "heavy"], weights=[50, 50])[0]
+                if special_type == "fast":
+                    width, height, img, mask = TARIFF_WIDTH_3, TARIFF_HEIGHT_3, TARIFF_ORANGE, pygame.mask.from_surface(
+                        TARIFF_ORANGE)
+                else:  # heavy
+                    width, height, img, mask = TARIFF_WIDTH_2, TARIFF_HEIGHT_2, TARIFF_DARK_RED, pygame.mask.from_surface(
+                        TARIFF_DARK_RED)
+
+                tariff_x = random.randint(0, WIDTH - width)
+                tariff_y = TRUMP_HEIGHT
+                tariffs.append({
+                    "rect": pygame.Rect(tariff_x, tariff_y, width, height),
+                    "type": special_type,
+                    "shockwave": False,
+                    "img": img,
+                    "mask": mask
                 })
 
         #-----------------------------
@@ -783,7 +827,7 @@ def run_mode_1(player_speed, tariff_speed):
             t_type = tariff["type"]
 
             if t_type == "fast":
-                rect.y += tariff_speed * 1.8 * difficulty
+                rect.y += tariff_speed * 1.5 * difficulty
             elif t_type == "heavy":
                 rect.y += tariff_speed * 0.6 * difficulty
             else:
@@ -807,9 +851,8 @@ def run_mode_1(player_speed, tariff_speed):
                 tariffs.remove(tariff)
                 continue
 
-            offset = (rect.x - player_img_rect.x, rect.y - player_img_rect.y)
-
-            if not invincible and current_mask.overlap(TARIFF_MASK, offset):
+            offset = (tariff["rect"].x - player_img_rect.x, tariff["rect"].y - player_img_rect.y)
+            if not invincible and current_mask.overlap(tariff["mask"], offset):
                 player_health -= 1
                 tariffs.remove(tariff)
 
@@ -1091,9 +1134,9 @@ def run_mode_2(player_speed, tariff_speed):
 
         if tariff_count > tariff_interval:
             for _ in range(2):
-                tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH)
+                tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH_1)
                 tariff_y = 100
-                tariffs.append(pygame.Rect(tariff_x, tariff_y, TARIFF_WIDTH, TARIFF_HEIGHT))
+                tariffs.append(pygame.Rect(tariff_x, tariff_y, TARIFF_WIDTH_1, TARIFF_HEIGHT_1))
 
             tariff_count = 0
 
