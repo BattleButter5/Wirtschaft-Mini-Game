@@ -154,6 +154,40 @@ crate_types = [
 selected_crate = 0
 requested_crate = 0
 
+MODE1_REVIVES = [
+    {
+        "pdf": "pdf-sample_0.pdf",
+        "questions": [
+            ("What is a tariff?", ["A tax", "A trade agreement", "A subsidy"], 0),
+            ("Who sets tariffs?", ["Government", "Banks", "Companies"], 0)
+        ]
+    },
+    {
+        "pdf": "pdf-sample_0.pdf",
+        "questions": [
+            ("What is a trade war?", ["Mutual tariffs", "Currency union", "Free trade"], 0),
+            ("Do trade wars increase prices?", ["Yes", "No", "Never"], 0)
+        ]
+    }
+]
+
+MODE2_REVIVES = [
+    {
+        "pdf": "pdf-sample_1.pdf",
+        "questions": [
+            ("What is export?", ["Sell abroad", "Buy abroad", "Tax goods"], 0),
+            ("Exports increase GDP?", ["Yes", "No", "Only locally"], 0)
+        ]
+    },
+    {
+        "pdf": "pdf-sample_1.pdf",
+        "questions": [
+            ("What does GDP stand for?", ["Gross Domestic Product", "Global Debt Plan", "General Trade Policy"], 0),
+            ("GDP measures?", ["Economic output", "Population", "Inflation only"], 0)
+        ]
+    }
+]
+
 # ----------------------------
 # Drawing functions
 # ----------------------------
@@ -300,9 +334,9 @@ def draw_quota_bar(money, quota):
     pygame.draw.rect(WIN, (0,0,0), bg_rect, 2)
 
 
-def show_pdf(file_path):
+def show_pdf(chosen_pdf):
     # Get the absolute path
-    subprocess.run(["start", "pdf-sample_0.pdf"], shell=True)  # Windows
+    subprocess.run(["start", chosen_pdf], shell=True)  # Windows
 
 
 
@@ -310,11 +344,6 @@ def show_pdf(file_path):
 #------------------------------------------------------
 
 def ask_trivia(questions):
-    """
-    questions: list of tuples:
-    (question_string, [option1, option2, option3], correct_index)
-    Returns number of correct answers
-    """
 
     correct = 0
     font = pygame.font.SysFont("Arial", 28)
@@ -367,36 +396,37 @@ def ask_trivia(questions):
 
 #revive function -------------------------------------
 #-----------------------------------------------------
-def revive_player(max_health):
-    # Step 1: Show message
+
+last_pack = None
+
+def revive_player(max_health, revive_packs):
+    global last_pack
+
     font = pygame.font.SysFont("Arial", 28)
     WIN.fill((0,0,0))
-    msg = "You were overwhelmed by rising tariffs! Read this article to survive!"
+    msg = "Read the article carefully to survive!"
     text_surf = font.render(msg, True, (255,255,255))
     WIN.blit(text_surf, (WIDTH//2 - text_surf.get_width()//2, HEIGHT//2))
     pygame.display.update()
     pygame.time.delay(2000)
 
-    # Step 2: Open PDF
-    show_pdf("pdf-sample_0.pdf")
+    available = [p for p in revive_packs if p != last_pack]
+    chosen_pack = random.choice(available)
+    last_pack = chosen_pack
 
-    # Step 3: Ask trivia
-    questions = [
-        ("What is a tariff?", ["A tax", "A trade agreement", "A subsidy"], 0),
-        ("Who sets tariffs?", ["Private companies", "Government", "Banks"], 1),
-        ("Do tariffs increase import prices?", ["Yes", "No", "Only in Europe"], 0)
-    ]
-    correct = ask_trivia(questions)
+    show_pdf(chosen_pack["pdf"])
 
-    # Step 4: Restore health
-    restored_health = max_health * (correct / len(questions))
+    correct = ask_trivia(chosen_pack["questions"])
 
-    # Return restored health or 0 if player failed
-    if restored_health > 0:
-        return int(restored_health)
+    # --- NEW LOGIC ---
+    if correct == len(chosen_pack["questions"]):
+        restored_health = max_health  # full revive if all correct
     else:
-        return 0
+        restored_health = max_health * (correct / len(chosen_pack["questions"]))
 
+    restored_health = max(1, round(restored_health))  # ensure at least 1 health if any correct
+
+    return restored_health
 
 #game over function -------------------------
 #--------------------------------------------
@@ -923,7 +953,7 @@ def run_mode_1(player_speed, tariff_speed):
                 first_death = False
 
                 pause_start = time.time()
-                restored_health = revive_player(max_health)
+                restored_health = revive_player(max_health,MODE1_REVIVES)
                 pause_duration = time.time() - pause_start
                 start_time += pause_duration  # pause game timer
 
@@ -1240,25 +1270,21 @@ def run_mode_2(player_speed, tariff_speed):
         if dead:
             if first_death:
                 first_death = False
-
-                pause_start = time.time()
-                restored_health = revive_player(max_health)
-                pause_duration = time.time() - pause_start
-                start_time += pause_duration  # pause game timer
+                # Pause game for revival
+                restored_health = revive_player(max_health, MODE2_REVIVES)
 
                 if restored_health > 0:
                     player_health = restored_health
                     dead = False
+                    # RESTART quartal timer so player gets full time after revival
+                    quartal_start_time = time.time()
                     continue
                 else:
-                    # permanent game over → back to menu
                     show_game_over_screen()
-
                     highscores = load_highscores()
                     if quartal > highscores["mode2"]:
                         highscores["mode2"] = quartal
                         save_highscores(highscores)
-
                     return "menu"
 
             else:
