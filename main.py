@@ -402,7 +402,7 @@ class MoneyBill(pygame.sprite.Sprite):
         super().__init__()
 
         original_img = pygame.image.load("money.png").convert_alpha()
-        self.image = pygame.transform.scale(original_img, (35, 35))
+        self.image = pygame.transform.scale(original_img, (43, 43))
 
         self.rect = self.image.get_rect()
 
@@ -529,6 +529,18 @@ def run_mode_1(player_speed, tariff_speed):
     jump_strength = -12
     on_ground = True
 
+    # ------------------------
+    # Dash System
+    # ------------------------
+    dash_speed = 20
+    dash_duration = 150  # milliseconds
+    dash_cooldown = 1500  # milliseconds
+
+    is_dashing = False
+    dash_timer = 0
+    last_dash_time = 0
+    invincible = False
+
     player_health = 3
     max_health = 3
 
@@ -601,6 +613,14 @@ def run_mode_1(player_speed, tariff_speed):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LSHIFT:
+                    now = pygame.time.get_ticks()
+                    if now - last_dash_time > dash_cooldown:
+                        is_dashing = True
+                        invincible = True
+                        dash_timer = 0
+                        last_dash_time = now
 
         # ------------------------
         # Player Input
@@ -608,13 +628,15 @@ def run_mode_1(player_speed, tariff_speed):
         keys = pygame.key.get_pressed()
         moving = False
 
-        if keys[pygame.K_a] and player.x - player_speed >= 0:
-            player.x -= player_speed
+        current_speed = dash_speed if is_dashing else player_speed
+
+        if keys[pygame.K_a] and player.x - current_speed >= 0:
+            player.x -= current_speed
             facing = "left"
             moving = True
 
-        if keys[pygame.K_d] and player.x + player_speed + player.width <= WIDTH:
-            player.x += player_speed
+        if keys[pygame.K_d] and player.x + current_speed + player.width <= WIDTH:
+            player.x += current_speed
             facing = "right"
             moving = True
 
@@ -655,6 +677,14 @@ def run_mode_1(player_speed, tariff_speed):
         if player.y < GAME_TOP:
             player.y = GAME_TOP
             player_vel_y = 0
+
+        #----------------
+        #dash timer
+        if is_dashing:
+            dash_timer += dt
+            if dash_timer >= dash_duration:
+                is_dashing = False
+                invincible = False
 
         # ------------------------
         # Trump Movement
@@ -737,7 +767,7 @@ def run_mode_1(player_speed, tariff_speed):
                 continue
 
             offset = (tariff.x - player_img_rect.x, tariff.y - player_img_rect.y)
-            if current_mask.overlap(TARIFF_MASK, offset):
+            if not invincible and current_mask.overlap(TARIFF_MASK, offset):
                 player_health -= 1
                 tariffs.remove(tariff)
 
