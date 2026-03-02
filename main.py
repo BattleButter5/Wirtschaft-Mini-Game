@@ -135,7 +135,13 @@ def draw_1(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
     WIN.blit(current_trump_img, (trump.x, trump.y))
 
     for tariff in tariffs:
-        WIN.blit(TARIFF_IMG, (tariff.x, tariff.y))
+        rect = tariff["rect"]
+        if tariff["type"] == "heavy":
+            pygame.draw.rect(WIN, (120, 0, 0), rect)  # dark red
+        elif tariff["type"] == "fast":
+            pygame.draw.rect(WIN,  (255, 165, 0, 255), rect)  # yellow
+        else:
+            WIN.blit(TARIFF_IMG, (rect.x, rect.y))
 
 
 def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target, crates, combo):
@@ -593,6 +599,9 @@ def run_mode_1(player_speed, tariff_speed):
     direction_timer = 0
     tariff_count = 0
     tariff_add_increment = 2000
+    # Before the loop
+    TARIFF_INTERVAL = 1500  # milliseconds
+    last_tariff_spawn = 0
 
     while True:
         dt = clock.tick(60)
@@ -734,19 +743,24 @@ def run_mode_1(player_speed, tariff_speed):
         # ------------------------
         # Tariff Spawning
         # ------------------------
-        if tariff_count > tariff_add_increment:
-            # Trigger Trump throw animation
-            trump_anim_state = "throw"
-            trump_anim_index = 0
-            trump_anim_timer = 0
+        now = pygame.time.get_ticks()
+        if now - last_tariff_spawn > TARIFF_INTERVAL:
+            last_tariff_spawn = now
 
-            for _ in range(random.randint(3,4)):
+            for _ in range(random.randint(3, 4)):
                 tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH)
                 tariff_y = TRUMP_HEIGHT
-                tariffs.append(pygame.Rect(tariff_x, tariff_y, TARIFF_WIDTH, TARIFF_HEIGHT))
 
-            tariff_count = 0
-            tariff_add_increment = max(375, tariff_add_increment - 80)
+                tariff_type = random.choices(
+                    ["normal", "fast", "heavy"],
+                    weights=[60, 25, 15]
+                )[0]
+
+                tariffs.append({
+                    "rect": pygame.Rect(tariff_x, tariff_y, TARIFF_WIDTH, TARIFF_HEIGHT),
+                    "type": tariff_type,
+                    "shockwave": False
+                })
 
         #-----------------------------
         #---money----------
@@ -761,12 +775,34 @@ def run_mode_1(player_speed, tariff_speed):
         # Collisions
         # ------------------------
         for tariff in tariffs[:]:
-            tariff.y += tariff_speed * difficulty
-            if tariff.y > HEIGHT:
+            rect = tariff["rect"]
+            t_type = tariff["type"]
+
+            if t_type == "fast":
+                rect.y += tariff_speed * 1.8 * difficulty
+            elif t_type == "heavy":
+                rect.y += tariff_speed * 0.6 * difficulty
+            else:
+                rect.y += tariff_speed * difficulty
+
+            if t_type == "heavy" and rect.bottom >= GAME_BOTTOM_1 and not tariff["shockwave"]:
+                tariff["shockwave"] = True
+
+                # Shockwave damage check
+                shockwave_radius = 120
+                player_center = player.centerx
+                if abs(player_center - rect.centerx) < shockwave_radius:
+                    if not invincible:
+                        player_health -= 1
+                        if player_health <= 0:
+                            dead = True
+
+            if rect.y > HEIGHT:
                 tariffs.remove(tariff)
                 continue
 
-            offset = (tariff.x - player_img_rect.x, tariff.y - player_img_rect.y)
+            offset = (rect.x - player_img_rect.x, rect.y - player_img_rect.y)
+
             if not invincible and current_mask.overlap(TARIFF_MASK, offset):
                 player_health -= 1
                 tariffs.remove(tariff)
@@ -780,15 +816,15 @@ def run_mode_1(player_speed, tariff_speed):
                     dead = True
 
                 break
-                # ------------------------
-                # Money Pickup Collision
-                # ------------------------
-            for bill in money_bills:
-                if player.colliderect(bill.rect):
-                    player_health += 1  # restore 1 health
-                    if player_health > max_health:
-                        player_health = max_health
-                    bill.kill()
+        # ------------------------
+        # Money Pickup Collision
+        # ------------------------
+        for bill in money_bills:
+            if player.colliderect(bill.rect):
+                player_health += 1  # restore 1 health
+                if player_health > max_health:
+                    player_health = max_health
+                bill.kill()
 
         # ------------------------
         # Draw Everything
