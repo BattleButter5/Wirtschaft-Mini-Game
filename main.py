@@ -406,23 +406,75 @@ def ask_trivia(questions):
 
     return correct
 
-#revive function -------------------------------------
-#-----------------------------------------------------
+#----------------------------------------------
+#text
 
-last_pack = None
-
-def revive_player(max_health, revive_packs):
-    global last_pack
+def show_messages_typewriter(messages, color=(255, 0, 0), letter_delay=50):
 
     font = pygame.font.SysFont("Arial", 28)
-    WIN.fill((0,0,0))
-    msg = "Read the article carefully to survive!"
-    text_surf = font.render(msg, True, (255,255,255))
-    WIN.blit(text_surf, (WIDTH//2 - text_surf.get_width()//2, HEIGHT//2))
-    pygame.display.update()
-    pygame.time.delay(2000)
 
-    # pick a pack different from last one
+    for msg in messages:
+        char_index = 0
+        start_ticks = pygame.time.get_ticks()
+        running = True
+
+        while running:
+            dt = pygame.time.Clock().tick(60)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
+
+            # Calculate how many letters to show based on elapsed time
+            now = pygame.time.get_ticks()
+            chars_to_show = min(len(msg), (now - start_ticks) // letter_delay)
+            displayed_text = msg[:chars_to_show]
+
+            # Draw background & text
+            WIN.fill((0, 0, 0))  # Or your BG
+            text_surf = font.render(displayed_text, True, color)
+            WIN.blit(text_surf, (WIDTH//2 - text_surf.get_width()//2, HEIGHT//2))
+            pygame.display.update()
+
+            # Once all letters are shown, wait 1 second and move on
+            if chars_to_show == len(msg) and now - start_ticks >= len(msg) * letter_delay + 1000:
+                running = False
+
+# ----------------------------
+# Death messages per mode
+# ----------------------------
+def get_death_messages(mode):
+    """
+    Returns a list of messages to display on player death based on the mode.
+    """
+    if mode == "mode1":
+        return [
+            "Du konntest den steigenden Zöllen nicht standhalten!",
+            "Bilde dich fort um auf diesem Markt zu bestehen..."
+        ]
+    elif mode == "mode2":
+        return [
+            "Der globale Handel hat dich überrollt!",
+            "Bilde dich fort um auf diesem Markt zu bestehen..."
+        ]
+    else:
+        return ["Du bist gestorben!", "Versuche es erneut."]
+
+
+# ----------------------------
+# Revive function updated
+# ----------------------------
+last_pack = None
+
+def revive_player(max_health, revive_packs, mode):
+    global last_pack
+
+    # Show mode-specific messages
+    messages = get_death_messages(mode)
+    show_messages_typewriter(messages, letter_delay=50)
+
+    # Pick a pack different from last one
     available = [p for p in revive_packs if p != last_pack]
     chosen_pack = random.choice(available)
     last_pack = chosen_pack
@@ -442,17 +494,19 @@ def revive_player(max_health, revive_packs):
 
     return restored_health
 
+
+
 #game over function -------------------------
 #--------------------------------------------
 def show_game_over_screen():
     WIN.blit(BG,(0,0))
     WIN.blit(TRUMP_IDLE,(WIDTH//2,100))
-    dead_img_rect = PLAYER_DEAD.get_rect(midbottom=(WIDTH//2, HEIGHT//2 + 400))
+    dead_img_rect = PLAYER_DEAD.get_rect(midbottom=(WIDTH//2, HEIGHT//2 + 500))
     WIN.blit(PLAYER_DEAD, dead_img_rect.topleft)
 
     # Draw game over message
     font = pygame.font.SysFont("Arial", 36)
-    msg = "Du konntest den steigenden Zöllen nicht standhalten!"
+    msg = "Du wurdest von den steigenden Zöllen überwältigt!"
     text_surf = font.render(msg, True, (255, 0, 0))
     WIN.blit(text_surf, (WIDTH//2 - text_surf.get_width()//2, HEIGHT//2 - 50))
 
@@ -988,7 +1042,7 @@ def run_mode_1(player_speed, tariff_speed):
                 first_death = False
 
                 pause_start = time.time()
-                restored_health = revive_player(max_health,MODE1_REVIVES)
+                restored_health = revive_player(max_health,MODE1_REVIVES,"mode1")
                 pause_duration = time.time() - pause_start
                 start_time += pause_duration  # pause game timer
 
@@ -1334,7 +1388,7 @@ def run_mode_2(player_speed, tariff_speed):
             if first_death:
                 first_death = False
                 # Pause game for revival
-                restored_health = revive_player(max_health, MODE2_REVIVES)
+                restored_health = revive_player(max_health, MODE2_REVIVES,"mode2")
 
                 if restored_health > 0:
                     player_health = restored_health
