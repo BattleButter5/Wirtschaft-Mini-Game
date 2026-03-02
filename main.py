@@ -356,14 +356,20 @@ def show_pdf(chosen_pdf):
 #------------------------------------------------------
 
 def ask_trivia(questions):
-
     correct = 0
-    font = pygame.font.SysFont("Arial", 28)
+    font_question = pygame.font.SysFont("Arial", 40)
+    font_question.set_underline(True)
+    font_options = pygame.font.SysFont("Arial", 34)
     clock = pygame.time.Clock()
 
-    for question, options, correct_index in questions:
+    for q_index, (question, options, correct_index) in enumerate(questions):
         answered = False
         selected = -1
+
+        # --- Layout constants ---
+        left_margin = WIDTH // 2 - 115  # fixed X start for everything
+        question_y = HEIGHT // 3
+        spacing = 80                 # pixels between options
 
         while not answered:
             clock.tick(60)
@@ -386,23 +392,40 @@ def ask_trivia(questions):
 
             WIN.fill((40, 40, 40))
 
-            # Draw question
-            question_surf = font.render(question, True, (255, 255, 255))
-            WIN.blit(question_surf, (WIDTH // 2 - question_surf.get_width() // 2, HEIGHT // 2 - 100))
+            # --- Draw question ---
+            question_surf = font_question.render(question, True, (255, 255, 255))
+            WIN.blit(question_surf, (WIDTH // 2 - 150, 200))
 
-            # Draw options
+            # --- Draw options ---
             for i, option in enumerate(options):
-                option_text = f"{i+1}. {option}"
-                option_surf = font.render(option_text, True, (200, 200, 200))
-                WIN.blit(option_surf, (WIDTH // 2 - option_surf.get_width() // 2, HEIGHT // 2 - 40 + i * 40))
+                option_text = f"{i + 1}. {option}"
+                option_surf = font_options.render(option_text, True, (200, 200, 200))
+                option_y = question_y + 50 + i * spacing
+                WIN.blit(option_surf, (left_margin, option_y))
+
+            # --- Draw progress indicator ---
+            progress_text = f"Question {q_index + 1} of {len(questions)}"
+            progress_surf = font_options.render(progress_text, True, (255, 255, 0))
+            WIN.blit(progress_surf, (1600, 915))
 
             pygame.display.update()
 
-        # Check answer
+        # --- Check answer and show feedback ---
         if selected == correct_index:
             correct += 1
+            feedback_text = "Correct!"
+            feedback_color = (0, 255, 0)
+        else:
+            feedback_text = f"Wrong!  Correct answer:  {options[correct_index]}"
+            feedback_color = (255, 0, 0)
 
-        pygame.time.delay(500)  # small pause before next question
+        # Display feedback for 1 second below options
+        feedback_surf = font_options.render(feedback_text, True, feedback_color)
+        feedback_x = WIDTH // 2 - feedback_surf.get_width() // 2
+        feedback_y = question_y + 90 + len(options) * spacing + 20
+        WIN.blit(feedback_surf, (feedback_x, feedback_y))
+        pygame.display.update()
+        pygame.time.delay(2000)
 
     return correct
 
