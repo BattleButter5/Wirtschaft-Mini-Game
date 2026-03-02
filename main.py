@@ -154,19 +154,27 @@ crate_types = [
 selected_crate = 0
 requested_crate = 0
 
+
+#------------------------------------------
+# PDFS & Fragen
+#-----------------------------------------
 MODE1_REVIVES = [
     {
         "pdf": "pdf-sample_0.pdf",
         "questions": [
             ("What is a tariff?", ["A tax", "A trade agreement", "A subsidy"], 0),
-            ("Who sets tariffs?", ["Government", "Banks", "Companies"], 0)
+            ("Who sets tariffs?", ["Government", "Banks", "Companies"], 0),
+            ("how old am i?", ["18", "19", "17"], 2),
+            ("how old is Tiny?", ["3", "4", "5"], 1)
         ]
     },
     {
         "pdf": "pdf-sample_0.pdf",
         "questions": [
             ("What is a trade war?", ["Mutual tariffs", "Currency union", "Free trade"], 0),
-            ("Do trade wars increase prices?", ["Yes", "No", "Never"], 0)
+            ("Do trade wars increase prices?", ["Yes", "No", "Never"], 0),
+            ("how old am i?", ["18", "19", "17"], 2),
+            ("how old is Tiny?", ["3", "4", "5"], 1)
         ]
     }
 ]
@@ -176,14 +184,18 @@ MODE2_REVIVES = [
         "pdf": "pdf-sample_1.pdf",
         "questions": [
             ("What is export?", ["Sell abroad", "Buy abroad", "Tax goods"], 0),
-            ("Exports increase GDP?", ["Yes", "No", "Only locally"], 0)
+            ("Exports increase GDP?", ["Yes", "No", "Only locally"], 0),
+            ("how old am i?", ["18", "19", "17"], 2),
+            ("how old is Tiny?", ["3", "4", "5"], 1)
         ]
     },
     {
         "pdf": "pdf-sample_1.pdf",
         "questions": [
             ("What does GDP stand for?", ["Gross Domestic Product", "Global Debt Plan", "General Trade Policy"], 0),
-            ("GDP measures?", ["Economic output", "Population", "Inflation only"], 0)
+            ("GDP measures?", ["Economic output", "Population", "Inflation only"], 0),
+            ("how old am i?", ["18", "19", "17"], 2),
+            ("how old is Tiny?", ["3", "4", "5"], 1)
         ]
     }
 ]
@@ -399,6 +411,8 @@ def ask_trivia(questions):
 
 last_pack = None
 
+import random
+
 def revive_player(max_health, revive_packs):
     global last_pack
 
@@ -410,21 +424,23 @@ def revive_player(max_health, revive_packs):
     pygame.display.update()
     pygame.time.delay(2000)
 
+    # pick a pack different from last one
     available = [p for p in revive_packs if p != last_pack]
     chosen_pack = random.choice(available)
     last_pack = chosen_pack
 
     show_pdf(chosen_pack["pdf"])
 
-    correct = ask_trivia(chosen_pack["questions"])
+    # Sample 3 random questions
+    questions_pool = chosen_pack["questions"]
+    num_questions = min(3, len(questions_pool))
+    questions_to_ask = random.sample(questions_pool, num_questions)
 
-    # --- NEW LOGIC ---
-    if correct == len(chosen_pack["questions"]):
-        restored_health = max_health  # full revive if all correct
-    else:
-        restored_health = max_health * (correct / len(chosen_pack["questions"]))
+    correct = ask_trivia(questions_to_ask)
 
-    restored_health = max(1, round(restored_health))  # ensure at least 1 health if any correct
+    # Each correct question restores 1/3 of max health
+    restored_health = max_health * (correct / 3)
+    restored_health = max(1, round(restored_health))  # always at least 1
 
     return restored_health
 
