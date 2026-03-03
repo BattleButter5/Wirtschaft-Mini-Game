@@ -1214,7 +1214,7 @@ def run_mode_2(player_speed, tariff_speed):
                         crates.append(crate)
                         last_shot = now
             if event.type == pygame.MOUSEWHEEL:
-                selected_crate += event.y
+                selected_crate -= event.y
                 selected_crate %= len(CRATE_IMAGES)
 
             if event.type == pygame.KEYDOWN:
