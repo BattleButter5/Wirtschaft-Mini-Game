@@ -367,9 +367,8 @@ def ask_trivia(questions):
         selected = -1
 
         # --- Layout constants ---
-        left_margin = WIDTH // 2 - 115  # fixed X start for everything
         question_y = HEIGHT // 3
-        spacing = 80                 # pixels between options
+        spacing = 80  # pixels between options
 
         while not answered:
             clock.tick(60)
@@ -394,14 +393,16 @@ def ask_trivia(questions):
 
             # --- Draw question ---
             question_surf = font_question.render(question, True, (255, 255, 255))
-            WIN.blit(question_surf, (WIDTH // 2 - 150, 200))
+            question_x = WIDTH // 2 - question_surf.get_width() // 2
+            WIN.blit(question_surf, (question_x, 250))
 
-            # --- Draw options ---
+            # --- Draw options centered ---
             for i, option in enumerate(options):
                 option_text = f"{i + 1}. {option}"
                 option_surf = font_options.render(option_text, True, (200, 200, 200))
+                option_x = WIDTH // 2 - option_surf.get_width() // 2
                 option_y = question_y + 50 + i * spacing
-                WIN.blit(option_surf, (left_margin, option_y))
+                WIN.blit(option_surf, (option_x, option_y))
 
             # --- Draw progress indicator ---
             progress_text = f"Question {q_index + 1} of {len(questions)}"
@@ -416,13 +417,13 @@ def ask_trivia(questions):
             feedback_text = "Correct!"
             feedback_color = (0, 255, 0)
         else:
-            feedback_text = f"Wrong!  Correct answer:  {options[correct_index]}"
+            feedback_text = f"Wrong! Correct answer: {options[correct_index]}"
             feedback_color = (255, 0, 0)
 
-        # Display feedback for 1 second below options
+        # Display feedback for 2 seconds below options
         feedback_surf = font_options.render(feedback_text, True, feedback_color)
         feedback_x = WIDTH // 2 - feedback_surf.get_width() // 2
-        feedback_y = question_y + 90 + len(options) * spacing + 20
+        feedback_y = question_y + 50 + len(options) * spacing + 20
         WIN.blit(feedback_surf, (feedback_x, feedback_y))
         pygame.display.update()
         pygame.time.delay(2000)
@@ -468,9 +469,6 @@ def show_messages_typewriter(messages, color=(255, 0, 0), letter_delay=50):
 # Death messages per mode
 # ----------------------------
 def get_death_messages(mode):
-    """
-    Returns a list of messages to display on player death based on the mode.
-    """
     if mode == "mode1":
         return [
             "Du konntest den steigenden Zöllen nicht standhalten!",
@@ -513,7 +511,7 @@ def revive_player(max_health, revive_packs, mode):
 
     # Each correct question restores 1/3 of max health
     restored_health = max_health * (correct / 3)
-    restored_health = max(1, round(restored_health))  # always at least 1
+    restored_health =  round(restored_health)
 
     return restored_health
 
