@@ -394,7 +394,7 @@ def ask_trivia(questions):
 
             # --- Draw question ---
             question_surf = font_question.render(question, True, (255, 255, 255))
-            WIN.blit(question_surf, (WIDTH // 2 - question_surf.get_width() //2 , 200))
+            WIN.blit(question_surf, (WIDTH // 2 - 150, 200))
 
             # --- Draw options ---
             for i, option in enumerate(options):
@@ -488,41 +488,36 @@ def get_death_messages(mode):
 # ----------------------------
 # Revive function updated
 # ----------------------------
-# global dictionary keyed by mode
-last_pack = {
-    "mode1": None,
-    "mode2": None
-}
+last_pack = None
 
-
-def revive_player(max_health, revive_packs, mode, difficulty="normal"):
+def revive_player(max_health, revive_packs, mode):
     global last_pack
 
+    # Show mode-specific messages
     messages = get_death_messages(mode)
     show_messages_typewriter(messages, letter_delay=50)
 
-    # Pick a pack different from last one for this mode
-    available = [p for p in revive_packs if p != last_pack.get(mode)]
-    if not available:
-        available = revive_packs  # fallback if all used
-
+    # Pick a pack different from last one
+    available = [p for p in revive_packs if p != last_pack]
     chosen_pack = random.choice(available)
-    last_pack[mode] = chosen_pack
+    last_pack = chosen_pack
 
     show_pdf(chosen_pack["pdf"])
 
-    # Ask 3 random questions
+    # Sample 3 random questions
     questions_pool = chosen_pack["questions"]
-    questions_to_ask = random.sample(questions_pool, min(3, len(questions_pool)))
+    num_questions = min(3, len(questions_pool))
+    questions_to_ask = random.sample(questions_pool, num_questions)
 
     correct = ask_trivia(questions_to_ask)
 
-    if correct == 0:
-        return 0
+    # Each correct question restores 1/3 of max health
+    restored_health = max_health * (correct / 3)
+    restored_health = max(1, round(restored_health))  # always at least 1
 
-    multiplier = 1 / 3 if difficulty == "normal" else 1 / 6
-    restored_health = max(1, round(max_health * correct * multiplier))
     return restored_health
+
+
 
 #game over function -------------------------
 #--------------------------------------------
@@ -726,7 +721,6 @@ def run_mode_1(player_speed, tariff_speed):
 
     dead = False
     first_death = True
-    revive_count = 0
 
     money_bills = pygame.sprite.Group()
     money_timer = 0
@@ -1067,33 +1061,42 @@ def run_mode_1(player_speed, tariff_speed):
         pygame.display.update()
 
         if dead:
-            if revive_count < 2:
-                # Pause the game updates
-                pygame.event.pump()  # prevent window freezing
-                restored_health = revive_player(max_health, MODE1_REVIVES, "mode1",
-                                                "normal" if revive_count == 0 else "hard")
+            if first_death:
+                first_death = False
+
+                pause_start = time.time()
+                restored_health = revive_player(max_health,MODE1_REVIVES,"mode1")
+                pause_duration = time.time() - pause_start
+                start_time += pause_duration  # pause game timer
+
                 if restored_health > 0:
                     player_health = restored_health
                     dead = False
-                    revive_count += 1
                     continue
                 else:
-                    # Failed revive → permanent death
+                    # permanent game over → back to menu
                     show_game_over_screen()
+                    # --- HIGH SCORE UPDATE ---
                     highscores = load_highscores()
                     if elapsed_time > highscores["mode1"]:
                         highscores["mode1"] = round(elapsed_time)
                         save_highscores(highscores)
+                    # --------------------------
+
                     return "menu"
 
             else:
-                # Already used both revives → permanent death
+                # SECOND DEATH → permanent game over
                 show_game_over_screen()
+                # --- HIGH SCORE UPDATE ---
                 highscores = load_highscores()
                 if elapsed_time > highscores["mode1"]:
                     highscores["mode1"] = round(elapsed_time)
                     save_highscores(highscores)
+                # --------------------------
+
                 return "menu"
+
 #------------------------------------------------
 #------------------------------------------------
 # run_mode_2
@@ -1133,7 +1136,6 @@ def run_mode_2(player_speed, tariff_speed):
 
     dead = False
     first_death = True
-    revive_count = 0
 
     combo = 0
     base_reward = 25
@@ -1406,32 +1408,34 @@ def run_mode_2(player_speed, tariff_speed):
         pygame.display.update()
 
         if dead:
-            if revive_count < 2:
-                pygame.event.pump()  # prevent freezing
-                restored_health = revive_player(max_health, MODE2_REVIVES, "mode2",
-                                                "normal" if revive_count == 0 else "hard")
+            if first_death:
+                first_death = False
+                # Pause game for revival
+                restored_health = revive_player(max_health, MODE2_REVIVES,"mode2")
+
                 if restored_health > 0:
                     player_health = restored_health
                     dead = False
-                    revive_count += 1
-                    continue  # resume game
+                    # RESTART quartal timer so player gets full time after revival
+                    quartal_start_time = time.time()
+                    continue
                 else:
-                    # Failed revive → permanent death
-                    dead = False  # IMPORTANT: reset dead to prevent loop
                     show_game_over_screen()
                     highscores = load_highscores()
                     if quartal > highscores["mode2"]:
-                        highscores["mode2"] = quartal  # use quartal count
+                        highscores["mode2"] = quartal
                         save_highscores(highscores)
                     return "menu"
+
             else:
-                # Already used both revives → permanent death
-                dead = False  # reset
+                # SECOND DEATH → permanent game over
                 show_game_over_screen()
+
                 highscores = load_highscores()
                 if quartal > highscores["mode2"]:
                     highscores["mode2"] = quartal
                     save_highscores(highscores)
+
                 return "menu"
 
 # ----------------------------
