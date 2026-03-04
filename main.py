@@ -39,6 +39,7 @@ FONT_BUTTONS = pygame.font.SysFont("Times New Roman", 40)
 
 # Images
 BG = pygame.transform.scale(pygame.image.load("bg1.png"), (WIDTH, HEIGHT))
+BG_2 = pygame.transform.scale(pygame.image.load("BG_2.png"), (WIDTH, HEIGHT))
 LIEFERENGPASS_IMG = pygame.image.load("Lieferengpass.png").convert_alpha()
 HIGHSCORE_FILE = "highscores.json"
 
@@ -200,6 +201,78 @@ MODE2_REVIVES = [
     }
 ]
 
+#--------------------------------------
+#cutscene text & Bilder
+#-------------------------------------
+
+MODE1_CUTSCENE = [
+    {
+        "text": [ "Global trade is collapsing...",
+                  "Tariffs are rising everywhere."
+                 ],
+        "images": [
+            {
+                "path": "trump_cutscene1.png",
+                "size": (300, 400),
+                "pos": (WIDTH // 2 - 250, HEIGHT // 2 - 200)
+            },
+            {
+                "path": "scroll_cutscene2.png",
+                "size": (200, 200),
+                "pos": (WIDTH // 2 + 200, HEIGHT // 2 - 150)
+            }
+        ]
+    },
+    {
+        "text": [
+            "You must survive the economic storm.",
+            "Avoid the falling tariffs!"
+        ],
+        "image": "cutscene_tariff.png"
+    },
+    {
+        "text": [
+            "Controls:",
+            "A / D to move",
+            "SPACE to jump",
+            "SHIFT to dash"
+        ],
+        "image": "cutscene_controls1.png"
+    }
+]
+
+
+MODE2_CUTSCENE = [
+    {
+        "text": [
+            "Global trade flows smoothly.",
+            "Opportunities are everywhere."
+        ],
+        "image": "cutscene_trade_good.png"
+    },
+    {
+        "text": [
+            "Fulfill export quotas each quarter.",
+            "Deliver the correct goods!"
+        ],
+        "image": "cutscene_quota.png"
+    },
+    {
+        "text": [
+            "Controls:",
+            "A / D to move",
+            "SPACE to jump",
+            "Mouse Click or F to shoot",
+            "Mouse Wheel or 1-3 to switch goods"
+        ],
+        "image": "cutscene_controls2.png"
+    }
+]
+
+#--------------------------------
+#FUNCTIONS
+#-------------------------------
+
 # ----------------------------
 # Drawing functions
 # ----------------------------
@@ -230,7 +303,7 @@ def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target,
         combo_color = (255, 255, 255)
 
 
-    WIN.blit(BG, (0, 0))
+    WIN.blit(BG_2, (0, 0))
 
 
     target.draw(WIN)
@@ -548,6 +621,214 @@ def save_highscores(highscores):
     with open(HIGHSCORE_FILE, "w") as f:
         json.dump(highscores, f)
 
+
+#---------------------------------------
+#cutscenes
+#---------------------------------------
+
+# ----------------------------
+# Opening Cutscene System
+# ----------------------------
+
+SEEN_CUTSCENES_FILE = "seen_cutscenes.json"
+
+
+def load_seen_cutscenes():
+    if os.path.exists(SEEN_CUTSCENES_FILE):
+        with open(SEEN_CUTSCENES_FILE, "r") as f:
+            return json.load(f)
+    else:
+        return {"mode1": False, "mode2": False}
+
+
+def save_seen_cutscenes(data):
+    with open(SEEN_CUTSCENES_FILE, "w") as f:
+        json.dump(data, f)
+
+
+def run_cutscene(slides):
+
+    font = pygame.font.SysFont("Arial", 36)
+    small_font = pygame.font.SysFont("Arial", 22)
+
+    clock = pygame.time.Clock()
+
+    # Fade in bars
+    for i in range(30):
+        WIN.fill((0, 0, 0))
+        draw_letterbox(WIN, i / 30)
+        pygame.display.update()
+        clock.tick(60)
+
+    fade_screen(fade_in=True)
+
+    for slide in slides:
+
+        images = []
+
+        if slide.get("images"):
+            for img_data in slide["images"]:
+                img = pygame.image.load(img_data["path"]).convert_alpha()
+                img = pygame.transform.scale(img, img_data["size"])
+                images.append({
+                    "surface": img,
+                    "pos": img_data["pos"]
+                })
+
+        for line in slide["text"]:
+
+            start_time = pygame.time.get_ticks()
+            finished = False
+
+            while not finished:
+                dt = clock.tick(60)
+
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        return
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE:
+                            finished = True
+                        if event.key == pygame.K_ESCAPE:
+                            return  # skip entire cutscene
+
+                now = pygame.time.get_ticks()
+                chars = min(len(line), (now - start_time) // 25)
+                displayed_text = line[:chars]
+
+                WIN.fill((25, 28, 35))
+
+                # Draw image
+                for img in images:
+                    WIN.blit(img["surface"], img["pos"])
+
+                # Draw text box background
+                text_box_rect = pygame.Rect(
+                    WIDTH // 6,
+                    HEIGHT - 220,
+                    WIDTH * 2 // 3,
+                    140
+                )
+                pygame.draw.rect(WIN, (0, 0, 0), text_box_rect)
+                pygame.draw.rect(WIN, (200, 200, 200), text_box_rect, 2)
+
+                # Draw text
+                text_surface = font.render(displayed_text, True, (255, 255, 255))
+                WIN.blit(
+                    text_surface,
+                    (text_box_rect.centerx - text_surface.get_width() // 2,
+                     text_box_rect.centery - text_surface.get_height() // 2 - 20)
+                )
+
+                hint = small_font.render("SPACE = next | ESC = skip", True, (160, 160, 160))
+                bar_height = HEIGHT // 8
+                hint_y = HEIGHT - bar_height - 25
+
+                WIN.blit( hint,(1625 , hint_y))
+
+                # Draw cinematic bars
+                draw_letterbox(WIN, 1)
+
+                pygame.display.update()
+
+                if chars == len(line) and now - start_time > len(line) * 25 + 1500:
+                    finished = True
+
+        fade_screen(fade_in=False, duration=400)
+        fade_screen(fade_in=True, duration=400)
+
+    # Fade out bars smoothly
+    for i in reversed(range(30)):
+        WIN.fill((0, 0, 0))
+        draw_letterbox(WIN, i / 30)
+        pygame.display.update()
+        clock.tick(60)
+
+    #fade_screen(fade_in=False)
+
+# ----------------------------
+# Cinematic Bars
+# ----------------------------
+
+def draw_letterbox(surface, progress):
+
+    max_bar_height = HEIGHT // 8
+    current_height = int(max_bar_height * progress)
+
+    # True black bars
+    top_rect = pygame.Rect(0, 0, WIDTH, current_height)
+    bottom_rect = pygame.Rect(0, HEIGHT - current_height, WIDTH, current_height)
+
+    pygame.draw.rect(surface, (0, 0, 0), top_rect)
+    pygame.draw.rect(surface, (0, 0, 0), bottom_rect)
+
+    # Subtle cinematic separator lines
+    if current_height > 0:
+        pygame.draw.line(surface, (40, 40, 40),
+                         (0, current_height),
+                         (WIDTH, current_height), 2)
+
+        pygame.draw.line(surface, (40, 40, 40),
+                         (0, HEIGHT - current_height),
+                         (WIDTH, HEIGHT - current_height), 2)
+
+
+# ----------------------------
+# Fade Effect
+# ----------------------------
+
+def fade_screen(fade_in=True, duration=600):
+    clock = pygame.time.Clock()
+    start_time = pygame.time.get_ticks()
+
+    # Compute window area (between the cinematic bars)
+    top_bar_height = HEIGHT // 8
+    bottom_bar_height = HEIGHT // 8
+    window_rect = pygame.Rect(
+        0,
+        top_bar_height,
+        WIDTH,
+        HEIGHT - top_bar_height - bottom_bar_height
+    )
+
+    # Create fade surface the size of the window area
+    fade_surf = pygame.Surface((window_rect.width, window_rect.height))
+    fade_surf.fill((0, 0, 0))
+
+    while True:
+        dt = clock.tick(60)
+        now = pygame.time.get_ticks()
+        elapsed = now - start_time
+        progress = min(elapsed / duration, 1)
+
+        # Calculate alpha for fade
+        if fade_in:
+            alpha = 255 - int(255 * progress)
+        else:
+            alpha = int(255 * progress)
+
+        fade_surf.set_alpha(alpha)
+
+        # Redraw background for the window area (optional: keep content behind if needed)
+        # WIN.fill((25, 28, 35))  # Only if you want a background behind fade
+
+        # Draw fade only inside window area
+        WIN.blit(fade_surf, (window_rect.x, window_rect.y))
+
+        # Draw cinematic bars on top so they stay solid
+        draw_letterbox(WIN, 1)
+
+        pygame.display.update()
+
+        if progress >= 1:
+            break
+
+#---------------------------------------
+#CLASSES
+#---------------------------------------
+
+
 #----------------------------------------
 class MoneyBill(pygame.sprite.Sprite):
     def __init__(self):
@@ -767,7 +1048,6 @@ def run_mode_1(player_speed, tariff_speed):
     TRUMP_VEL = random.choice([-5, 5])
     direction_timer = 0
     tariff_count = 0
-    tariff_add_increment = 2000
     # Before the loop
     TARIFF_INTERVAL = 1500  # milliseconds
     last_tariff_spawn = 0
@@ -1440,9 +1720,11 @@ def run_mode_2(player_speed, tariff_speed):
 # Individual scenario functions
 # ----------------------------
 def game_mode1():
+    run_cutscene(MODE1_CUTSCENE)
     return run_mode_1(player_speed=8, tariff_speed=6)
 
 def game_mode2():
+    run_cutscene(MODE2_CUTSCENE)
     return run_mode_2(player_speed=8, tariff_speed=6)
 
 # ----------------------------
