@@ -39,8 +39,12 @@ FONT_BUTTONS = pygame.font.SysFont("Times New Roman", 40)
 
 # Images
 BG = pygame.transform.scale(pygame.image.load("bg1.png"), (WIDTH, HEIGHT))
-BG_2 = pygame.transform.scale(pygame.image.load("BG_2.png"), (WIDTH, HEIGHT))
+BG_2 = pygame.transform.scale(pygame.image.load("BG_6.png"), (WIDTH, HEIGHT))
 LIEFERENGPASS_IMG = pygame.image.load("Lieferengpass.png").convert_alpha()
+EXPORT_TARGET_IMG = pygame.transform.scale(
+    pygame.image.load("Flag.png").convert_alpha(),  # Use your image filename
+    (250, 80)
+)
 HIGHSCORE_FILE = "highscores.json"
 
 # Load tariff sprites
