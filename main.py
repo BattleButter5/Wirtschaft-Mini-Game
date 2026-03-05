@@ -211,8 +211,24 @@ MODE2_REVIVES = [
 
 MODE1_CUTSCENE = [
     {
-        "text": [ "Global trade is collapsing...",
-                  "Tariffs are rising everywhere."
+        "text": ["Der internationale Handel steht kurz vor dem Zusammenbruch...",
+
+
+                 ],
+        "images": [
+            {
+                "path": "cutscene_trade_down.png",
+                "size": (350,400),
+                "pos": (WIDTH // 2 - 250, HEIGHT // 2 - 200)
+            },
+
+        ]
+    },
+    {
+        "text": [ "Trumps Zölle haben einen Zollkrieg ausgelöst!",
+                  "Handelsbeziehungen gehen in die Brüche...",
+                  "Preise und Bürokratie steigen...",
+
                  ],
         "images": [
             {
@@ -229,19 +245,86 @@ MODE1_CUTSCENE = [
     },
     {
         "text": [
-            "You must survive the economic storm.",
-            "Avoid the falling tariffs!"
+            "Du bist Teil eines kleinen deutschen Exportunternehmens"
         ],
-        "image": "cutscene_tariff.png"
+        "images": [
+            {
+                "path": "player_idle.png",
+                "size": (250, 350),
+                "pos": (WIDTH // 2 - 400, HEIGHT // 2 - 150)
+            },
+            {
+                "path": "cutscene_company.png",
+                "size": (500, 400),
+                "pos": (WIDTH // 2 + 200, HEIGHT // 2 - 150)
+            },
+            {
+                "path": "cutscene_deutschland.png",
+                "size": (200, 75),
+                "pos": (WIDTH // 2 + 450, HEIGHT // 2 - 150)
+            }
+        ]
     },
     {
         "text": [
-            "Controls:",
-            "A / D to move",
-            "SPACE to jump",
-            "SHIFT to dash"
+            "Ihr exportiert hauptsächlich in sie USA."
         ],
-        "image": "cutscene_controls1.png"
+        "images": [
+            {
+                "path": "player_idle.png",
+                "size": (250, 350),
+                "pos": (WIDTH // 2 - 400, HEIGHT // 2 - 150)
+            },
+            {
+                "path": "Flag.png",
+                "size": (500, 300),
+                "pos": (WIDTH // 2 + 200, HEIGHT // 2 - 150)
+            }
+        ]
+    },
+    {
+        "text": [
+            "Die Zölle und der stockende Handel stellen eine große Bedrohung dar...",
+            "Weiche ihnen aus um den Bankrott zu vermeiden! "
+        ],
+        "images": [
+            {
+                "path": "player_idle.png",
+                "size": (250, 350),
+                "pos": (WIDTH // 2 - 400, HEIGHT // 2 - 150)
+            },
+            {
+                "path": "tariff_light_red.png",
+                "size": (150, 150),
+                "pos": (WIDTH // 2  , HEIGHT // 2 - 350)
+            },
+{
+                "path": "cutscene_trade_down.png",
+                "size": (350, 200),
+                "pos": (WIDTH // 2 + 100, HEIGHT // 2 - 50)
+            },
+            {
+                "path": "cutscene_scroll.png",
+                "size": (200, 200),
+                "pos": (WIDTH // 2 + 350, HEIGHT // 2 - 350)
+            }
+        ]
+    },
+    {
+        "text": [
+            "Steuerung:",
+            "A / D zum Bewegen",
+            "LEERTASTE zum Springen",
+            "SHIFT zum Ausweichen"
+        ],
+        "images": [
+            {
+                "path": "keyboard_colored.png",
+                "size": (700, 350),
+                "pos": (WIDTH // 2 -200 , HEIGHT // 2 -300 )
+            }
+
+        ]
     }
 ]
 
