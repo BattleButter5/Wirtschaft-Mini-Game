@@ -319,7 +319,7 @@ MODE1_CUTSCENE = [
         ],
         "images": [
             {
-                "path": "keyboard_colored.png",
+                "path": "keyboard_colored_1.png",
                 "size": (700, 350),
                 "pos": (WIDTH // 2 -300 , HEIGHT // 2 -300 )
             }
@@ -340,12 +340,12 @@ MODE2_CUTSCENE = [
             {
                 "path": "cutscene_trade_up_1.png",
                 "size": (500, 300),
-                "pos": (WIDTH // 2 - 500, HEIGHT // 2 - 200)
+                "pos": (WIDTH // 2 - 600, HEIGHT // 2 - 200)
             },
 {
                 "path": "BG_2.png",
                 "size": (550, 650),
-                "pos": (WIDTH // 2 + 200, HEIGHT // 2 - 350)
+                "pos": (WIDTH // 2 , HEIGHT // 2 - 350)
             },
 
         ]
@@ -422,18 +422,57 @@ MODE2_CUTSCENE = [
             },
         ],
     },
+{
+        "text": [
+            "Exportiere die richtigen Produkte um diese zu erfüllen.",
+            "Vermeide Lieferengpässe und erfülle das Ziel in der vorgegebenen Zeit. "
+        ],
+        "images": [
+            {
+                "path": "player_idle.png",
+                "size": (250, 350),
+                "pos": (WIDTH // 2 - 500, HEIGHT // 2 - 150)
+            },
+
+            {    "path": "crate_1.png",
+                "size": (100, 100),
+                "pos": (WIDTH // 2 , HEIGHT // 2 + 50)
+            },
+            {
+                "path": "crate_2.png",
+                "size": (100, 100),
+                "pos": (WIDTH // 2 -110, HEIGHT // 2 +50)
+            },
+            {
+                "path": "crate_3.png",
+                "size": (100, 100),
+                "pos": (WIDTH // 2 -55, HEIGHT // 2 - 60)
+            },
+            {
+                "path": "cutscene_ziel.png",
+                "size": (550, 100),
+                "pos": (WIDTH // 2 +250, HEIGHT // 2 )
+            },
+
+        ],
+    },
     {
         "text": [
-            "Controls:",
-            "A / D to move",
-            "SPACE to jump",
-            "Mouse Click or F to shoot",
-            "Mouse Wheel or 1-3 to switch goods"
+            "Steuerung:",
+            "A / D zum Bewegen",
+            "SPACE zum Springen",
+            "LINKE MAUSTASTE oder F um die Kisten zu exportieren",
+            "MAUSRAD oder 1-3 um Kisten zu wechseln"
         ],
-        "image": "cutscene_controls2.png"
-        }
+        "images": [
+            {
+                "path": "keyboard_colored.png",
+                "size": (700, 350),
+                "pos": (WIDTH // 2 - 300, HEIGHT // 2 - 300)
+            }
 
-
+        ]
+    }
 ]
 
 #--------------------------------
@@ -483,14 +522,14 @@ def draw_2(player,time_left, tariffs, player_img, quartal, money, quota, target,
 
 
     quartal_text = FONT_BUTTONS.render(f"Quartal: {quartal}", True, "white")
-    quota_text = FONT_BUTTONS.render("Quota: $", True, "white")
-    time_left_text = FONT_BUTTONS.render(f"Time Left: {max(0, int(time_left))}", True, timer_color)
+    quota_text = FONT_BUTTONS.render("Ziel: $", True, "white")
+    time_left_text = FONT_BUTTONS.render(f"Verbleibende Zeit: {max(0, int(time_left))}s", True, timer_color)
     combo_text = FONT_BUTTONS.render(f"Combo: {combo}", True, combo_color)
 
-    WIN.blit(quartal_text, (150, 20))
-    WIN.blit(quota_text, (600, 20))
-    WIN.blit(time_left_text, (1650, 20))
-    WIN.blit(combo_text, (1350, 20))
+    WIN.blit(quartal_text, (125, 20))
+    WIN.blit(quota_text, (550, 20))
+    WIN.blit(time_left_text, (1450, 20))
+    WIN.blit(combo_text, (1150, 20))
     draw_quota_bar(money,quota)
 
     img_rect = player_img.get_rect(midbottom=player.midbottom)
@@ -567,7 +606,7 @@ def draw_health_bar(player_rect, health, max_health):
 def draw_quota_bar(money, quota):
     bar_width = 300
     bar_height = 20
-    bar_x = WIDTH // 2 - bar_width // 2  -20
+    bar_x = WIDTH // 2 - bar_width // 2  -120
     bar_y = 35
 
     # Calculate progress ratio
@@ -899,7 +938,7 @@ def run_cutscene(slides):
 
                 pygame.display.update()
 
-                if chars == len(line) and now - start_time > len(line) * 25 + 2000:
+                if chars == len(line) and now - start_time > len(line) * 25 + 2350:
                     finished = True
 
         fade_screen(fade_in=False, duration=400)
