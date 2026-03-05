@@ -43,7 +43,7 @@ BG_2 = pygame.transform.scale(pygame.image.load("BG_6.png"), (WIDTH, HEIGHT))
 LIEFERENGPASS_IMG = pygame.image.load("Lieferengpass.png").convert_alpha()
 EXPORT_TARGET_IMG = pygame.transform.scale(
     pygame.image.load("Flag.png").convert_alpha(),  # Use your image filename
-    (250, 80)
+    (220, 80)
 )
 HIGHSCORE_FILE = "highscores.json"
 
@@ -216,12 +216,12 @@ MODE1_CUTSCENE = [
                  ],
         "images": [
             {
-                "path": "trump_cutscene1.png",
+                "path": "cutscene_trump.png",
                 "size": (300, 400),
                 "pos": (WIDTH // 2 - 250, HEIGHT // 2 - 200)
             },
             {
-                "path": "scroll_cutscene2.png",
+                "path": "cutscene_scroll.png",
                 "size": (200, 200),
                 "pos": (WIDTH // 2 + 200, HEIGHT // 2 - 150)
             }
@@ -878,38 +878,35 @@ class CrateProjectile:
 #----------------------
 class ExportTarget:
     def __init__(self, speed):
-        self.image = pygame.Surface((250, 30))
+        # Load PNG instead of creating a red surface
+        self.image = EXPORT_TARGET_IMG
         self.rect = self.image.get_rect()
         self.rect.y = 120
 
         self.base_speed = speed
         self.direction = 1   # 1 = right, -1 = left
 
-        self.last_type = None         # previous requested crate
-        self.repeat_count = 0         # how many times it repeated consecutively
-        self.max_repeats = 2          # allow at most 2 times in a row
+        self.last_type = None
+        self.repeat_count = 0
+        self.max_repeats = 2
 
         self.new_request()
 
     def new_request(self):
         available_types = list(range(len(CRATE_IMAGES)))
 
-        # If last type repeated max times, remove it from choices
         if self.repeat_count >= self.max_repeats and self.last_type is not None:
             available_types.remove(self.last_type)
 
-        # pick new requested type
         self.requested_type = random.choice(available_types)
 
-        # update repeat count
         if self.requested_type == self.last_type:
             self.repeat_count += 1
         else:
-            self.repeat_count = 1  # first time in a new streak
+            self.repeat_count = 1
 
         self.last_type = self.requested_type
 
-        # random horizontal position
         self.rect.x = random.randint(0, WIDTH - self.rect.width)
 
     def update(self):
@@ -924,13 +921,14 @@ class ExportTarget:
             self.direction = -1
 
     def draw(self, surface):
-        # Draw base target
-        self.image.fill((200, 50, 50))
+        # Draw the PNG
         surface.blit(self.image, self.rect)
 
         # Draw requested crate icon above it
         crate_img = CRATE_IMAGES[self.requested_type]
-        icon_rect = crate_img.get_rect(midbottom=(self.rect.centerx, max(self.rect.top - 5, UI_HEIGHT + crate_img.get_height())))
+        icon_rect = crate_img.get_rect(
+            midbottom=(self.rect.centerx, max(self.rect.top - 5, UI_HEIGHT + crate_img.get_height()))
+        )
         surface.blit(crate_img, icon_rect)
 
 #--------------------------------------
