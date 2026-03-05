@@ -1224,7 +1224,7 @@ def run_mode_1(player_speed, tariff_speed):
     # Trump animation state
     # ------------------------
     TRUMP_FRAMES = [
-        pygame.transform.scale(pygame.image.load(f"trump_{i}.png"), (TRUMP_WIDTH, TRUMP_HEIGHT))
+        pygame.transform.scale(pygame.image.load(f"trump_{i}.png").convert_alpha(), (TRUMP_WIDTH, TRUMP_HEIGHT))
         for i in range(1, 4)
     ]
 
