@@ -267,7 +267,7 @@ MODE1_CUTSCENE = [
     },
     {
         "text": [
-            "Ihr exportiert hauptsächlich in sie USA."
+            "Ihr exportiert hauptsächlich in die USA."
         ],
         "images": [
             {
@@ -321,7 +321,7 @@ MODE1_CUTSCENE = [
             {
                 "path": "keyboard_colored.png",
                 "size": (700, 350),
-                "pos": (WIDTH // 2 -200 , HEIGHT // 2 -300 )
+                "pos": (WIDTH // 2 -300 , HEIGHT // 2 -300 )
             }
 
         ]
@@ -331,11 +331,24 @@ MODE1_CUTSCENE = [
 
 MODE2_CUTSCENE = [
     {
-        "text": [
-            "Global trade flows smoothly.",
-            "Opportunities are everywhere."
-        ],
-        "image": "cutscene_trade_good.png"
+        "text": ["Der internationale Handel blüht auf!",
+                 "Keine Einschränkungen oder Zölle...",
+                 "Viele Möglichkeiten für Profit..."
+
+                 ],
+        "images": [
+            {
+                "path": "cutscene_trade_up_1.png",
+                "size": (500, 300),
+                "pos": (WIDTH // 2 - 500, HEIGHT // 2 - 200)
+            },
+{
+                "path": "BG_2.png",
+                "size": (400, 550),
+                "pos": (WIDTH // 2 + 200, HEIGHT // 2 - 300)
+            },
+
+        ]
     },
     {
         "text": [
@@ -819,7 +832,7 @@ def run_cutscene(slides):
 
                 pygame.display.update()
 
-                if chars == len(line) and now - start_time > len(line) * 25 + 1500:
+                if chars == len(line) and now - start_time > len(line) * 25 + 2000:
                     finished = True
 
         fade_screen(fade_in=False, duration=400)
