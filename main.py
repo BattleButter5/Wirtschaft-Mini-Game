@@ -344,18 +344,83 @@ MODE2_CUTSCENE = [
             },
 {
                 "path": "BG_2.png",
-                "size": (400, 550),
-                "pos": (WIDTH // 2 + 200, HEIGHT // 2 - 300)
+                "size": (550, 650),
+                "pos": (WIDTH // 2 + 200, HEIGHT // 2 - 350)
             },
 
         ]
     },
     {
         "text": [
-            "Fulfill export quotas each quarter.",
-            "Deliver the correct goods!"
+            "Du bist Teil eines kleinen deutschen Exportunternehmens"
         ],
-        "image": "cutscene_quota.png"
+        "images": [
+            {
+                "path": "player_idle.png",
+                "size": (250, 350),
+                "pos": (WIDTH // 2 - 400, HEIGHT // 2 - 150)
+            },
+            {
+                "path": "cutscene_company.png",
+                "size": (500, 400),
+                "pos": (WIDTH // 2 + 200, HEIGHT // 2 - 150)
+            },
+            {
+                "path": "cutscene_deutschland.png",
+                "size": (200, 75),
+                "pos": (WIDTH // 2 + 450, HEIGHT // 2 - 150)
+            },
+        ],
+    },
+    {
+        "text": [
+            "Ihr exportiert hauptsächlich in die USA."
+        ],
+        "images": [
+            {
+                "path": "player_idle.png",
+                "size": (250, 350),
+                "pos": (WIDTH // 2 - 500, HEIGHT // 2 - 150)
+            },
+            {
+                "path": "Flag.png",
+                "size": (500, 300),
+                "pos": (WIDTH // 2 + 300, HEIGHT // 2 - 150)
+            },
+            {
+                "path": "crate_1.png",
+                "size": (100, 100),
+                "pos": (WIDTH // 2 , HEIGHT // 2 + 50)
+            },
+            {
+                "path": "crate_2.png",
+                "size": (100, 100),
+                "pos": (WIDTH // 2 -110, HEIGHT // 2 +50)
+            },
+            {
+                "path": "crate_3.png",
+                "size": (100, 100),
+                "pos": (WIDTH // 2 -55, HEIGHT // 2 - 60)
+            }
+        ]
+    },
+
+    {
+        "text": [
+            "Leider hast du einen sehr strengen Chef, der hohe Quartalziele setzt..."
+        ],
+        "images": [
+            {
+                "path": "player_idle.png",
+                "size": (250, 350),
+                "pos": (WIDTH // 2 - 400, HEIGHT // 2 - 150)
+            },
+            {
+                "path": "cutscene_boss_2.png",
+                "size": (300, 400),
+                "pos": (WIDTH // 2 + 200, HEIGHT // 2 - 150)
+            },
+        ],
     },
     {
         "text": [
@@ -366,7 +431,9 @@ MODE2_CUTSCENE = [
             "Mouse Wheel or 1-3 to switch goods"
         ],
         "image": "cutscene_controls2.png"
-    }
+        }
+
+
 ]
 
 #--------------------------------
