@@ -1211,6 +1211,9 @@ def run_mode_1(player_speed, tariff_speed):
 
     explosions = []
 
+    BASE_TARIFF_INTERVAL = 1500  # ms – starting interval between waves
+    MIN_TARIFF_INTERVAL = 500  # ms – fastest possible interval
+
     # ------------------------
     # Player animation state
     # ------------------------
@@ -1262,23 +1265,25 @@ def run_mode_1(player_speed, tariff_speed):
     while True:
         dt = clock.tick(60)
         elapsed_time = time.time() - start_time
-        now = pygame.time.get_ticks()  # current time in ms
+        now = pygame.time.get_ticks()
         direction_timer += dt
         tariff_count += dt
         difficulty = min(1 + elapsed_time / 30, 3)
 
         money_timer += dt
 
+        # ---- Dynamic spawn interval ----
+        current_interval = max(MIN_TARIFF_INTERVAL, BASE_TARIFF_INTERVAL - elapsed_time * 15)
         # ------------------------
         # Event Handling
         # ------------------------
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                return
+                return None
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    return
+                    return None
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LSHIFT:
                     now = pygame.time.get_ticks()
@@ -1390,12 +1395,16 @@ def run_mode_1(player_speed, tariff_speed):
         # ------------------------
         # Tariff Spawning (with throw trigger)
         # ------------------------
-        now = pygame.time.get_ticks()
-        if now - last_tariff_spawn > TARIFF_INTERVAL:
-            last_tariff_spawn = now
-            trigger_throw = True  # start animation when spawning
+        # --- Spawn timer check (only if no spawn is already pending) ---
+        if now - last_tariff_spawn > current_interval and not spawn_pending:
+            last_tariff_spawn = now  # start counting for next wave now
+            trigger_throw = True  # begin the throw animation
+            spawn_pending = True
+            spawn_ready_time = now + 2 * TRUMP_ANIM_SPEED  # tariffs appear when arms come down
 
-            # Spawn 2–4 normal tariffs
+            # --- Spawn execution (when it's time to actually create the tariffs) ---
+        if spawn_pending and now >= spawn_ready_time:
+            # spawn normal and special tariffs exactly as before
             for _ in range(random.randint(3, 4)):
                 tariff_x = random.randint(0, WIDTH - TARIFF_WIDTH_1)
                 tariff_y = TRUMP_HEIGHT
@@ -1406,17 +1415,14 @@ def run_mode_1(player_speed, tariff_speed):
                     "img": TARIFF_LIGHT_RED,
                     "mask": TARIFF_MASK
                 })
-
-            # Spawn 1–2 special tariffs
             for _ in range(random.randint(1, 2)):
                 special_type = random.choices(["fast", "heavy"], weights=[50, 50])[0]
                 if special_type == "fast":
                     width, height, img, mask = TARIFF_WIDTH_3, TARIFF_HEIGHT_3, TARIFF_ORANGE, pygame.mask.from_surface(
                         TARIFF_ORANGE)
-                else:  # heavy
+                else:
                     width, height, img, mask = TARIFF_WIDTH_2, TARIFF_HEIGHT_2, TARIFF_DARK_RED, pygame.mask.from_surface(
                         TARIFF_DARK_RED)
-
                 tariff_x = random.randint(0, WIDTH - width)
                 tariff_y = TRUMP_HEIGHT
                 tariffs.append({
@@ -1426,6 +1432,7 @@ def run_mode_1(player_speed, tariff_speed):
                     "img": img,
                     "mask": mask
                 })
+            spawn_pending = False
 
         #-----------------------------
         #---money----------
