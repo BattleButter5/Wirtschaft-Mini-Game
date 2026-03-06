@@ -1574,6 +1574,10 @@ def run_mode_2(player_speed, tariff_speed):
     quartal_duration = 30
     quartal_start_time = time.time()
 
+    bottleneck_interval = random.randint(15000, 25000)  # initial value
+    bottleneck_duration = 8000  # base duration
+
+
     base_crate_speed = 8
     base_target_speed = 4
 
@@ -1644,8 +1648,19 @@ def run_mode_2(player_speed, tariff_speed):
         time_left = quartal_duration - elapsed_time
         multiplier_cap = base_multiplier_cap + (quartal - 1) * 0.5
         crate_speed = min(base_crate_speed + (quartal - 1) * 0.5, 7)
-        target_speed = min(base_target_speed + (quartal - 1) * 0.4, 8)
+
+        # Crate speed: increases slowly, capped at 10
+        crate_speed = min(10, base_crate_speed + (quartal - 1) * 0.3)
+
+        # Target speed: increases moderately, capped at 15
+        target_speed = min(15, base_target_speed + (quartal - 1) * 0.6)
         target.base_speed = target_speed
+
+
+        # Bottleneck settings
+        if quartal >= 3:
+            # Recalculate interval only when a bottleneck deactivates (see below)
+            pass
 
 
         # ------------------------
@@ -1654,25 +1669,30 @@ def run_mode_2(player_speed, tariff_speed):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                return
+                return None
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                 return
+                 return None
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Left mouse button
                     now = pygame.time.get_ticks()
                     if now - last_shot > shoot_cooldown:
-                        crate = CrateProjectile(player.centerx, player.top,selected_crate)
+                        crate = CrateProjectile(player.centerx, player.top, selected_crate)
+                        crate.normal_speed = crate_speed  # set from current difficulty
                         crates.append(crate)
                         last_shot = now
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_f:
                     now = pygame.time.get_ticks()
                     if now - last_shot > shoot_cooldown:
-                        crate = CrateProjectile(player.centerx, player.top,selected_crate)
+                        crate = CrateProjectile(player.centerx, player.top, selected_crate)
+                        crate.normal_speed = crate_speed  # set from current difficulty
                         crates.append(crate)
                         last_shot = now
+
             if event.type == pygame.MOUSEWHEEL:
                 selected_crate -= event.y
                 selected_crate %= len(CRATE_IMAGES)
@@ -1844,6 +1864,7 @@ def run_mode_2(player_speed, tariff_speed):
                 crates.remove(crate)
 
         # Only start appearing in quartal 3+
+        # Bottleneck activation check (only for quartal >= 3)
         if quartal >= 3:
             if not bottleneck.active and bottleneck_timer > bottleneck_interval:
                 bottleneck.activate()
@@ -1852,10 +1873,15 @@ def run_mode_2(player_speed, tariff_speed):
 
             if bottleneck.active:
                 bottleneck_active_time += dt
-                if bottleneck_active_time > bottleneck_duration:
+                # Duration increases with quartal (max 15000 ms)
+                current_duration = min(15000, bottleneck_duration + (quartal - 3) * 1000)
+                if bottleneck_active_time > current_duration:
                     bottleneck.deactivate()
                     bottleneck_timer = 0
-                    bottleneck_interval = random.randint(15000, 25000)  # next random spawn
+                    # Recalculate next interval based on quartal
+                    min_int = max(5000, 15000 - quartal * 1000)
+                    max_int = max(6000, 25000 - quartal * 1500)
+                    bottleneck_interval = random.randint(min_int, max_int)
 
         # ------------------------
         # Draw Everything
