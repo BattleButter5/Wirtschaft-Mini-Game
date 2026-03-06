@@ -1227,12 +1227,16 @@ def run_mode_1(player_speed, tariff_speed):
         pygame.transform.scale(pygame.image.load(f"trump_{i}.png").convert_alpha(), (TRUMP_WIDTH, TRUMP_HEIGHT))
         for i in range(1, 4)
     ]
-
-    trump_anim_state = "idle"  # "idle" or "throw"
+    TRUMP_ANIM_SPEED = 150  # ms per frame
     trump_anim_index = 0
     trump_anim_timer = 0
-    TRUMP_ANIM_SPEED = 120  # ms per frame
+    is_throwing = False
+    trigger_throw = False
     current_trump_img = TRUMP_FRAMES[0]
+
+    # New spawn‑timing variables
+    spawn_pending = False
+    spawn_ready_time = 0
 
     # ------------------------
     # Precompute all masks
@@ -1248,7 +1252,6 @@ def run_mode_1(player_speed, tariff_speed):
     clock = pygame.time.Clock()
     start_time = time.time()
 
-
     TRUMP_VEL = random.choice([-5, 5])
     direction_timer = 0
     tariff_count = 0
@@ -1259,6 +1262,7 @@ def run_mode_1(player_speed, tariff_speed):
     while True:
         dt = clock.tick(60)
         elapsed_time = time.time() - start_time
+        now = pygame.time.get_ticks()  # current time in ms
         direction_timer += dt
         tariff_count += dt
         difficulty = min(1 + elapsed_time / 30, 3)
@@ -1304,7 +1308,6 @@ def run_mode_1(player_speed, tariff_speed):
             facing = "right"
             moving = True
 
-
         if moving:
             walk_timer += dt
             if walk_timer > walk_anim_speed:
@@ -1321,9 +1324,7 @@ def run_mode_1(player_speed, tariff_speed):
             current_mask = PLAYER_IDLE_MASK
             walk_index = 0
 
-        # Align the mask with the drawn image
         player_img_rect = current_player_img.get_rect(midbottom=player.midbottom)
-        #PLAYER_MASK = pygame.mask.from_surface(current_player_img)
 
         if keys[pygame.K_SPACE] and on_ground:
             player_vel_y = jump_strength
@@ -1361,46 +1362,38 @@ def run_mode_1(player_speed, tariff_speed):
         if trump.x <= 0 or trump.x + TRUMP_WIDTH >= WIDTH:
             TRUMP_VEL *= -1
 
-        if trump_anim_state == "throw":
+        # ------------------------
+        # Trump Throw Animation Update
+        # ------------------------
+        if trigger_throw and not is_throwing:
+            # Start a new throw animation
+            is_throwing = True
+            trump_anim_index = 0
+            trump_anim_timer = 0
+            trigger_throw = False
+
+        if is_throwing:
             trump_anim_timer += dt
-            if trump_anim_timer > TRUMP_ANIM_SPEED:
+            if trump_anim_timer >= TRUMP_ANIM_SPEED:
                 trump_anim_index += 1
                 trump_anim_timer = 0
-
                 if trump_anim_index >= len(TRUMP_FRAMES):
-                    trump_anim_state = "idle"
-                    trump_anim_index = 0
-
+                    # Animation finished
+                    is_throwing = False
+                    trump_anim_index = 0  # reset to idle for next time
+            # Set current image based on index (0=idle,1=arms up,2=arms down)
             current_trump_img = TRUMP_FRAMES[trump_anim_index]
         else:
+            # Not throwing: use idle frame
             current_trump_img = TRUMP_FRAMES[0]
 
         # ------------------------
-        # Trump Throw Animation
-        # ------------------------
-        trump_anim_timer += dt
-
-        if trump_anim_state == 1 and trump_anim_timer > TRUMP_ANIM_SPEED:
-            current_trump_img = TRUMP_THROW_UP
-            trump_anim_state = 2
-            trump_anim_timer = 0
-
-        elif trump_anim_state == 2 and trump_anim_timer > TRUMP_ANIM_SPEED:
-            current_trump_img = TRUMP_THROW_DOWN
-            trump_anim_state = 3
-            trump_anim_timer = 0
-
-        elif trump_anim_state == 3 and trump_anim_timer > TRUMP_ANIM_SPEED:
-            current_trump_img = TRUMP_IDLE
-            trump_anim_state = 0
-            trump_anim_timer = 0
-
-        # ------------------------
-        # Tariff Spawning
+        # Tariff Spawning (with throw trigger)
         # ------------------------
         now = pygame.time.get_ticks()
         if now - last_tariff_spawn > TARIFF_INTERVAL:
             last_tariff_spawn = now
+            trigger_throw = True  # start animation when spawning
 
             # Spawn 2–4 normal tariffs
             for _ in range(random.randint(3, 4)):
@@ -1439,7 +1432,6 @@ def run_mode_1(player_speed, tariff_speed):
         if money_timer >= money_interval:
             bill = MoneyBill()
             money_bills.add(bill)
-
             money_timer = 0
             money_interval = random.randint(10000, 15000)
 
@@ -1467,7 +1459,6 @@ def run_mode_1(player_speed, tariff_speed):
                     "duration": 300,  # ms
                     "elapsed": 0
                 })
-                # Remove tariff immediately
                 tariffs.remove(tariff)
                 continue
 
@@ -1475,30 +1466,24 @@ def run_mode_1(player_speed, tariff_speed):
                 tariffs.remove(tariff)
                 continue
 
-            offset = (tariff["rect"].x - player_img_rect.x, tariff["rect"].y - player_img_rect.y)
+            offset = (rect.x - player_img_rect.x, rect.y - player_img_rect.y)
             if not invincible and current_mask.overlap(tariff["mask"], offset):
                 player_health -= 1
                 tariffs.remove(tariff)
-
-                # small invulnerability delay (prevents double-hits)
                 pygame.time.delay(30)
-
-
-
                 if player_health <= 0:
                     dead = True
-
                 break
+
         # ------------------------
         # Money Pickup Collision
         # ------------------------
         for bill in money_bills:
             if player.colliderect(bill.rect):
-                player_health += 1  # restore 1 health
+                player_health += 1
                 if player_health > max_health:
                     player_health = max_health
                 bill.kill()
-
 
         # ------------------------
         # Draw Everything
@@ -1508,30 +1493,25 @@ def run_mode_1(player_speed, tariff_speed):
         money_bills.update(dt)
         money_bills.draw(WIN)
 
-
         # Update explosions
         for exp in explosions[:]:
             exp["elapsed"] += dt
-            # Increase radius smoothly
             exp["radius"] = exp["max_radius"] * (exp["elapsed"] / exp["duration"])
-
-            # Draw explosion (red circle with fading alpha)
             alpha = max(0, 255 * (1 - exp["elapsed"] / exp["duration"]))
             surface = pygame.Surface((exp["radius"] * 2, exp["radius"] * 2), pygame.SRCALPHA)
             pygame.draw.circle(surface, (255, 50, 0, int(alpha)), (int(exp["radius"]), int(exp["radius"])),
                                int(exp["radius"]))
             WIN.blit(surface, (exp["x"] - exp["radius"], exp["y"] - exp["radius"]))
 
-            # Check shockwave damage
+            # Shockwave damage
             player_center = player.center
             dx = player_center[0] - exp["x"]
             dy = player_center[1] - exp["y"]
             distance = (dx ** 2 + dy ** 2) ** 0.5
-
             if distance <= exp["radius"] and not invincible:
                 player_health -= 1
-                invincible = True  # optional: give short invincibility after hit
-                pygame.time.set_timer(pygame.USEREVENT + 1, 200)  # remove invincibility after 200ms
+                invincible = True
+                pygame.time.set_timer(pygame.USEREVENT + 1, 200)
 
             if exp["elapsed"] >= exp["duration"]:
                 explosions.remove(exp)
@@ -1545,38 +1525,29 @@ def run_mode_1(player_speed, tariff_speed):
         if dead:
             if first_death:
                 first_death = False
-
                 pause_start = time.time()
-                restored_health = revive_player(max_health,MODE1_REVIVES,"mode1")
+                restored_health = revive_player(max_health, MODE1_REVIVES, "mode1")
                 pause_duration = time.time() - pause_start
-                start_time += pause_duration  # pause game timer
+                start_time += pause_duration
 
                 if restored_health > 0:
                     player_health = restored_health
                     dead = False
                     continue
                 else:
-                    # permanent game over → back to menu
                     show_game_over_screen()
-                    # --- HIGH SCORE UPDATE ---
                     highscores = load_highscores()
                     if elapsed_time > highscores["mode1"]:
                         highscores["mode1"] = round(elapsed_time)
                         save_highscores(highscores)
-                    # --------------------------
-
                     return "menu"
 
             else:
-                # SECOND DEATH → permanent game over
                 show_game_over_screen()
-                # --- HIGH SCORE UPDATE ---
                 highscores = load_highscores()
                 if elapsed_time > highscores["mode1"]:
                     highscores["mode1"] = round(elapsed_time)
                     save_highscores(highscores)
-                # --------------------------
-
                 return "menu"
 
 #------------------------------------------------
