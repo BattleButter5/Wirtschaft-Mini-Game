@@ -717,12 +717,11 @@ def show_messages_typewriter(messages, color=(255, 0, 0), letter_delay=50):
     font = pygame.font.SysFont("Arial", 28)
 
     for msg in messages:
-        char_index = 0
         start_ticks = pygame.time.get_ticks()
         running = True
 
         while running:
-            dt = pygame.time.Clock().tick(60)
+
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -755,7 +754,7 @@ def get_death_messages(mode):
         ]
     elif mode == "mode2":
         return [
-            "Der globale Handel hat dich überrollt!",
+            "Du konntest die Quartal-Ziele nicht erfüllen!",
             "Bilde dich fort um auf diesem Markt zu bestehen..."
         ]
     else:
@@ -765,7 +764,7 @@ def get_death_messages(mode):
 def get_game_over_message(mode):
     messages = {
         "mode1": "Du wurdest von den steigenden Zöllen überwältigt!",
-        "mode2": "Der globale Handel hat dich überrollt!"
+        "mode2": "Du konntest die Quartal-Ziele nicht erfüllen!"
     }
     return messages.get(mode, "Du bist gestorben!")   # fallback
 # ----------------------------
@@ -894,7 +893,6 @@ def run_cutscene(slides):
             finished = False
 
             while not finished:
-                dt = clock.tick(60)
 
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -992,7 +990,6 @@ def draw_letterbox(surface, progress):
 # ----------------------------
 
 def fade_screen(fade_in=True, duration=600):
-    clock = pygame.time.Clock()
     start_time = pygame.time.get_ticks()
 
     # Compute window area (between the cinematic bars)
@@ -1010,7 +1007,6 @@ def fade_screen(fade_in=True, duration=600):
     fade_surf.fill((0, 0, 0))
 
     while True:
-        dt = clock.tick(60)
         now = pygame.time.get_ticks()
         elapsed = now - start_time
         progress = min(elapsed / duration, 1)
@@ -1224,7 +1220,6 @@ def run_mode_1(player_speed, tariff_speed):
     # ------------------------
     # Player animation state
     # ------------------------
-    current_player_img = PLAYER_IDLE
     walk_index = 0
     walk_timer = 0
     walk_anim_speed = 80  # ms per frame
@@ -1242,7 +1237,6 @@ def run_mode_1(player_speed, tariff_speed):
     trump_anim_timer = 0
     is_throwing = False
     trigger_throw = False
-    current_trump_img = TRUMP_FRAMES[0]
 
     # New spawn‑timing variables
     spawn_pending = False
@@ -1254,10 +1248,8 @@ def run_mode_1(player_speed, tariff_speed):
     PLAYER_WALK_RIGHT_MASKS = [pygame.mask.from_surface(img) for img in PLAYER_WALK_RIGHT]
     PLAYER_WALK_LEFT_MASKS = [pygame.mask.from_surface(img) for img in PLAYER_WALK_LEFT]
     PLAYER_IDLE_MASK = pygame.mask.from_surface(PLAYER_IDLE)
-    current_mask = PLAYER_IDLE_MASK
 
     tariffs = []
-    hit = False
 
     clock = pygame.time.Clock()
     start_time = time.time()
@@ -1266,7 +1258,6 @@ def run_mode_1(player_speed, tariff_speed):
     direction_timer = 0
     tariff_count = 0
     # Before the loop
-    TARIFF_INTERVAL = 1500  # milliseconds
     last_tariff_spawn = 0
 
     while True:
@@ -1576,7 +1567,6 @@ def run_mode_2(player_speed, tariff_speed):
     player = pygame.Rect(200, HEIGHT - PLAYER_HEIGHT, PLAYER_WIDTH, PLAYER_HEIGHT)
 
     clock = pygame.time.Clock()
-    start_time = time.time()
 
     quartal = 1
     quota = 100
@@ -1585,8 +1575,6 @@ def run_mode_2(player_speed, tariff_speed):
     quartal_duration = 30
     quartal_start_time = time.time()
 
-    bottleneck_interval = random.randint(15000, 25000)  # initial value
-    bottleneck_duration = 8000  # base duration
 
 
     base_crate_speed = 8
@@ -1625,7 +1613,6 @@ def run_mode_2(player_speed, tariff_speed):
     # ------------------------
     # Player animation state
     # ------------------------
-    current_player_img = PLAYER_IDLE
     walk_index = 0
     walk_timer = 0
     walk_anim_speed = 80  # ms per frame
@@ -1635,11 +1622,8 @@ def run_mode_2(player_speed, tariff_speed):
     PLAYER_WALK_RIGHT_MASKS = [pygame.mask.from_surface(img) for img in PLAYER_WALK_RIGHT]
     PLAYER_WALK_LEFT_MASKS = [pygame.mask.from_surface(img) for img in PLAYER_WALK_LEFT]
     PLAYER_IDLE_MASK = pygame.mask.from_surface(PLAYER_IDLE)
-    current_mask = PLAYER_IDLE_MASK
 
     tariffs = []
-    hit = False
-
 
 
     tariff_count = 0
@@ -1658,7 +1642,6 @@ def run_mode_2(player_speed, tariff_speed):
         elapsed_time = time.time() - quartal_start_time
         time_left = quartal_duration - elapsed_time
         multiplier_cap = base_multiplier_cap + (quartal - 1) * 0.5
-        crate_speed = min(base_crate_speed + (quartal - 1) * 0.5, 7)
 
         # Crate speed: increases slowly, capped at 10
         crate_speed = min(10, base_crate_speed + (quartal - 1) * 0.3)
@@ -1826,8 +1809,6 @@ def run_mode_2(player_speed, tariff_speed):
 
                 break
 
-        #  Calculate elapsed time
-        quartal_time = time.time() - quartal_start_time
 
         #   Check if quota reached
         if money >= quota:
