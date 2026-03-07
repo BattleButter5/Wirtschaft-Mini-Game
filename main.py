@@ -218,7 +218,7 @@ MODE1_CUTSCENE = [
         "images": [
             {
                 "path": "cutscene_trade_down.png",
-                "size": (350,400),
+                "size": (500,400),
                 "pos": (WIDTH // 2 - 250, HEIGHT // 2 - 200)
             },
 
@@ -761,7 +761,13 @@ def get_death_messages(mode):
     else:
         return ["Du bist gestorben!", "Versuche es erneut."]
 
-
+#-----------------------------------
+def get_game_over_message(mode):
+    messages = {
+        "mode1": "Du wurdest von den steigenden Zöllen überwältigt!",
+        "mode2": "Der globale Handel hat dich überrollt!"
+    }
+    return messages.get(mode, "Du bist gestorben!")   # fallback
 # ----------------------------
 # Revive function updated
 # ----------------------------
@@ -798,20 +804,21 @@ def revive_player(max_health, revive_packs, mode):
 
 #game over function -------------------------
 #--------------------------------------------
-def show_game_over_screen():
+def show_game_over_screen(mode):
     WIN.blit(BG,(0,0))
     WIN.blit(TRUMP_IDLE,(WIDTH//2,100))
     dead_img_rect = PLAYER_DEAD.get_rect(midbottom=(WIDTH//2, HEIGHT//2 + 500))
     WIN.blit(PLAYER_DEAD, dead_img_rect.topleft)
 
-    # Draw game over message
+    # Get mode‑specific message
+    msg = get_game_over_message(mode)
+
     font = pygame.font.SysFont("Arial", 36)
-    msg = "Du wurdest von den steigenden Zöllen überwältigt!"
     text_surf = font.render(msg, True, (255, 0, 0))
     WIN.blit(text_surf, (WIDTH//2 - text_surf.get_width()//2, HEIGHT//2 - 50))
 
     pygame.display.update()
-    pygame.time.delay(3000)  # wait 3 seconds before quitting
+    pygame.time.delay(3000)
 
 # Load highscores or create default if file doesn't exist
 def load_highscores():
@@ -1525,13 +1532,16 @@ def run_mode_1(player_speed, tariff_speed):
             if player_health <= 0:
                 dead = True
 
-            break
 
         pygame.display.update()
 
         if dead:
             if first_death:
                 first_death = False
+                tariffs.clear()
+                explosions.clear()
+                pygame.time.set_timer(pygame.USEREVENT + 1, 0)  # cancel the timer
+                invincible = False
                 pause_start = time.time()
                 restored_health = revive_player(max_health, MODE1_REVIVES, "mode1")
                 pause_duration = time.time() - pause_start
@@ -1542,7 +1552,7 @@ def run_mode_1(player_speed, tariff_speed):
                     dead = False
                     continue
                 else:
-                    show_game_over_screen()
+                    show_game_over_screen("mode1")
                     highscores = load_highscores()
                     if elapsed_time > highscores["mode1"]:
                         highscores["mode1"] = round(elapsed_time)
@@ -1550,7 +1560,7 @@ def run_mode_1(player_speed, tariff_speed):
                     return "menu"
 
             else:
-                show_game_over_screen()
+                show_game_over_screen("mode1")
                 highscores = load_highscores()
                 if elapsed_time > highscores["mode1"]:
                     highscores["mode1"] = round(elapsed_time)
@@ -1571,6 +1581,7 @@ def run_mode_2(player_speed, tariff_speed):
     quartal = 1
     quota = 100
     money = 0
+    MAX_QUOTA = 500
     quartal_duration = 30
     quartal_start_time = time.time()
 
@@ -1821,7 +1832,8 @@ def run_mode_2(player_speed, tariff_speed):
         #   Check if quota reached
         if money >= quota:
             quartal += 1
-            quota += 50
+            if quota < MAX_QUOTA:
+                quota += 50
             quartal_start_time = time.time()
             money = 0
 
@@ -1906,7 +1918,7 @@ def run_mode_2(player_speed, tariff_speed):
                     quartal_start_time = time.time()
                     continue
                 else:
-                    show_game_over_screen()
+                    show_game_over_screen("mode2")
                     highscores = load_highscores()
                     if quartal > highscores["mode2"]:
                         highscores["mode2"] = quartal
@@ -1915,7 +1927,7 @@ def run_mode_2(player_speed, tariff_speed):
 
             else:
                 # SECOND DEATH → permanent game over
-                show_game_over_screen()
+                show_game_over_screen("mode2")
 
                 highscores = load_highscores()
                 if quartal > highscores["mode2"]:
