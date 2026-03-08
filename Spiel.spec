@@ -7,6 +7,7 @@ a = Analysis(
     datas=[
         ('bg1.png', '.'),
         ('BG_6.png', '.'),
+	('BG_2.png', '.'),
         ('Lieferengpass.png', '.'),
         ('Flag.png', '.'),
         ('tariff_light_red.png', '.'),
@@ -33,6 +34,7 @@ a = Analysis(
         ('crate_2.png', '.'),
         ('crate_3.png', '.'),
         ('cutscene_trade_down.png', '.'),
+	('cutscene_trade_up_1.png', '.'),
         ('cutscene_trump.png', '.'),
         ('cutscene_scroll.png', '.'),
         ('cutscene_company.png', '.'),

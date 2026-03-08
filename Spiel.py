@@ -33,6 +33,10 @@ def get_writable_path(filename):
 # ----------------------------
 WIN = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 WIDTH, HEIGHT = WIN.get_size()
+# After WIDTH, HEIGHT = WIN.get_size()
+BASE_WIDTH, BASE_HEIGHT = 1920, 1080
+SCALE_X = WIDTH / BASE_WIDTH
+SCALE_Y = HEIGHT / BASE_HEIGHT
 pygame.display.set_caption("Tariff Game")
 
 UI_HEIGHT = 100
@@ -157,8 +161,8 @@ GAME2 = "game2"
 
 # Buttons
 title_button = pygame.Rect(WIDTH // 2 - 200, 200, 400, 60)
-scenario_button1 = pygame.Rect(WIDTH // 2 - 350, 450, 850, 60)
-scenario_button2 = pygame.Rect(WIDTH // 2 - 350, 600, 850, 60)
+scenario_button1 = pygame.Rect(WIDTH // 2 - 400, HEIGHT // 2 - 100, 850, 60)
+scenario_button2 = pygame.Rect(WIDTH // 2 - 400, HEIGHT // 2 +50, 850, 60)
 
 # crates
 CRATE_IMAGES = [
@@ -348,7 +352,7 @@ MODE2_CUTSCENE = [
             },
             {
                 "path": "BG_2.png",
-                "size": (550, 650),
+                "size": (500, 600),
                 "pos": (WIDTH // 2 , HEIGHT // 2 - 350)
             },
         ]
@@ -488,11 +492,13 @@ def draw_1(player, elapsed_time, tariffs, trump, player_img, current_trump_img):
         WIN.blit(tariff["img"], (tariff["rect"].x, tariff["rect"].y))
 
 def draw_2(player, time_left, tariffs, player_img, quartal, money, quota, target, crates, combo):
+    # Timer color
     if time_left <= 6:
         timer_color = (255, 0, 0)
     else:
         timer_color = (255, 255, 255)
 
+    # Combo color
     if combo >= 3:
         combo_color = (255, 140, 0)
     else:
@@ -503,33 +509,65 @@ def draw_2(player, time_left, tariffs, player_img, quartal, money, quota, target
     for crate in crates:
         crate.draw(WIN)
 
+    # UI background bar
     pygame.draw.rect(WIN, (30, 30, 30), (0, 0, WIDTH, UI_HEIGHT))
     pygame.draw.line(WIN, (80, 80, 80), (0, UI_HEIGHT), (WIDTH, UI_HEIGHT), 2)
+
+    # Scaled positions for texts
+    quartal_x = int(125 * SCALE_X)
+    quartal_y = int(20 * SCALE_Y)
+    quota_x = int(550 * SCALE_X)
+    quota_y = int(20 * SCALE_Y)
+    combo_x = int(1150 * SCALE_X)
+    combo_y = int(20 * SCALE_Y)
+    time_x = int(1450 * SCALE_X)
+    time_y = int(20 * SCALE_Y)
 
     quartal_text = FONT_BUTTONS.render(f"Quartal: {quartal}", True, "white")
     quota_text = FONT_BUTTONS.render("Ziel: $", True, "white")
     time_left_text = FONT_BUTTONS.render(f"Verbleibende Zeit: {max(0, int(time_left))}s", True, timer_color)
     combo_text = FONT_BUTTONS.render(f"Combo: {combo}", True, combo_color)
 
-    WIN.blit(quartal_text, (125, 20))
-    WIN.blit(quota_text, (550, 20))
-    WIN.blit(time_left_text, (1450, 20))
-    WIN.blit(combo_text, (1150, 20))
+    WIN.blit(quartal_text, (quartal_x, quartal_y))
+    WIN.blit(quota_text, (quota_x, quota_y))
+    WIN.blit(time_left_text, (time_x, time_y))
+    WIN.blit(combo_text, (combo_x, combo_y))
+
     draw_quota_bar(money, quota)
 
+    # Player
     img_rect = player_img.get_rect(midbottom=player.midbottom)
     WIN.blit(player_img, img_rect.topleft)
 
+    # Tariffs (positions already handled in game logic, so just blit)
     for tariff in tariffs:
         WIN.blit(TARIFF_LIGHT_RED, (tariff.x, tariff.y))
 
-    # Selection Bar
-    bar_y = HEIGHT - 55
+    # --- Selection Bar (perfectly centered) ---
+    bar_y = HEIGHT - int(55 * SCALE_Y)  # distance from bottom
+    slot_size = int(50 * SCALE_X)  # outer slot size (including border)
+    slot_spacing = int(120 * SCALE_X)  # space between slot centers
+    start_x = WIDTH // 2 - (len(CRATE_IMAGES) * slot_spacing) // 2
+
     for i, img in enumerate(CRATE_IMAGES):
-        x_pos = WIDTH // 2 - 120 + i * 120
+        x_pos = start_x + i * slot_spacing
+        slot_rect = pygame.Rect(x_pos, bar_y, slot_size, slot_size)
+
+        # Draw slot border (3px thick)
         border_color = (255, 255, 0) if i == selected_crate else (100, 100, 100)
-        pygame.draw.rect(WIN, border_color, (x_pos, bar_y, 50, 50), 3)
-        WIN.blit(img, (x_pos + 5, bar_y + 5))
+        pygame.draw.rect(WIN, border_color, slot_rect, 3)
+
+        # Inner area: remove border thickness (3px on each side)
+        inner_rect = slot_rect.inflate(-6, -6)  # because 3px left + 3px right = 6px total reduction
+
+        # Scale crate image to fit nicely inside inner area (90% of inner size leaves a margin)
+        target_size = int(inner_rect.width * 0.8), int(inner_rect.height * 0.8)
+        img_scaled = pygame.transform.scale(img, target_size)
+
+        # Center the scaled image in the inner rectangle
+        img_rect = img_scaled.get_rect(center=inner_rect.center)
+        WIN.blit(img_scaled, img_rect)
+
 
 def draw_menu():
     highscores = load_highscores()
@@ -566,16 +604,20 @@ def draw_health_bar(player_rect, health, max_health):
     pygame.draw.rect(WIN, (0, 0, 0), bg_rect, 1)
 
 def draw_quota_bar(money, quota):
-    bar_width = 300
-    bar_height = 20
-    bar_x = WIDTH // 2 - bar_width // 2 - 120
-    bar_y = 35
+    bar_width = int(300 * SCALE_X)
+    bar_height = int(20 * SCALE_Y)
+    bar_x = WIDTH // 2 - bar_width // 2 - int(120 * SCALE_X)
+    bar_y = int(35 * SCALE_Y)
+
     progress = min(money / quota, 1)
+
     bg_rect = pygame.Rect(bar_x, bar_y, bar_width, bar_height)
     pygame.draw.rect(WIN, (50, 50, 50), bg_rect)
+
     fg_width = int(bar_width * progress)
     fg_rect = pygame.Rect(bar_x, bar_y, fg_width, bar_height)
     pygame.draw.rect(WIN, (50, 200, 50), fg_rect)
+
     pygame.draw.rect(WIN, (0,0,0), bg_rect, 2)
 
 def show_pdf(chosen_pdf):
@@ -754,6 +796,11 @@ def run_cutscene(slides):
     small_font = pygame.font.SysFont("Arial", 22)
     clock = pygame.time.Clock()
 
+    # Reference resolution (your design target)
+    BASE_WIDTH, BASE_HEIGHT = 1920, 1080
+    scale_x = WIDTH / BASE_WIDTH
+    scale_y = HEIGHT / BASE_HEIGHT
+
     # Fade in bars
     for i in range(30):
         WIN.fill((0, 0, 0))
@@ -767,13 +814,22 @@ def run_cutscene(slides):
         images = []
         if slide.get("images"):
             for img_data in slide["images"]:
-                # Use resource_path to load cutscene images
                 img = pygame.image.load(resource_path(img_data["path"])).convert_alpha()
-                img = pygame.transform.scale(img, img_data["size"])
-                images.append({
-                    "surface": img,
-                    "pos": img_data["pos"]
-                })
+                orig_size = img_data["size"]
+                new_size = (int(orig_size[0] * scale_x), int(orig_size[1] * scale_y))
+                img = pygame.transform.scale(img, new_size)
+                pos = img_data["pos"]  # already computed for current screen
+                images.append({"surface": img, "pos": pos})
+
+        # Text box dimensions (constant)
+        bar_height = HEIGHT // 8
+        text_box_height = 120
+        text_box_width = WIDTH * 2 // 3
+        text_box_x = WIDTH // 6
+
+        # Fixed y: bottom of text box aligns with top of bottom bar
+        text_box_y = (HEIGHT - bar_height) - text_box_height +5
+        text_box_rect = pygame.Rect(text_box_x, text_box_y, text_box_width, text_box_height)
 
         for line in slide["text"]:
             start_time = pygame.time.get_ticks()
@@ -796,12 +852,7 @@ def run_cutscene(slides):
                 for img in images:
                     WIN.blit(img["surface"], img["pos"])
 
-                text_box_rect = pygame.Rect(
-                    WIDTH // 6,
-                    HEIGHT - 220,
-                    WIDTH * 2 // 3,
-                    140
-                )
+                # Draw text box
                 pygame.draw.rect(WIN, (0, 0, 0), text_box_rect)
                 pygame.draw.rect(WIN, (200, 200, 200), text_box_rect, 2)
 
@@ -812,10 +863,11 @@ def run_cutscene(slides):
                      text_box_rect.centery - text_surface.get_height() // 2 - 20)
                 )
 
-                hint = small_font.render("SPACE = next | ESC = skip", True, (160, 160, 160))
-                bar_height = HEIGHT // 8
-                hint_y = HEIGHT - bar_height - 25
-                WIN.blit(hint, (1625, hint_y))
+                # Hint text (right‑aligned, above bottom bar)
+                hint_surf = small_font.render("SPACE = next | ESC = skip", True, (160, 160, 160))
+                hint_x = WIDTH - hint_surf.get_width() - 30
+                hint_y = HEIGHT - bar_height - 30
+                WIN.blit(hint_surf, (hint_x, hint_y))
 
                 draw_letterbox(WIN, 1)
                 pygame.display.update()
