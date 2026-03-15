@@ -11,16 +11,13 @@ pygame.font.init()
 # Helper to find resources (for PyInstaller)
 # ----------------------------
 def resource_path(relative_path):
-    """Get absolute path to resource, works for dev and for PyInstaller"""
     try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except Exception:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
 def get_writable_path(filename):
-    """Return a path in the user's writable directory (next to the exe or in the current folder)."""
     if getattr(sys, 'frozen', False):
         # Running as bundled exe – use the folder containing the exe
         base_path = os.path.dirname(sys.executable)
@@ -186,6 +183,7 @@ requested_crate = 0
 # ------------------------------------------
 MODE1_REVIVES = [
     {
+        "title": "title1",
         "pdf": "pdf-sample_0.pdf",
         "questions": [
             ("What is a tariff?", ["A tax", "A trade agreement", "A subsidy"], 0),
@@ -195,6 +193,7 @@ MODE1_REVIVES = [
         ]
     },
     {
+        "title": "title2",
         "pdf": "pdf-sample_0.pdf",
         "questions": [
             ("What is a trade war?", ["Mutual tariffs", "Currency union", "Free trade"], 0),
@@ -207,6 +206,7 @@ MODE1_REVIVES = [
 
 MODE2_REVIVES = [
     {
+        "title": "title1",
         "pdf": "pdf-sample_1.pdf",
         "questions": [
             ("What is export?", ["Sell abroad", "Buy abroad", "Tax goods"], 0),
@@ -216,6 +216,7 @@ MODE2_REVIVES = [
         ]
     },
     {
+        "title": "title2",
         "pdf": "pdf-sample_1.pdf",
         "questions": [
             ("What does GDP stand for?", ["Gross Domestic Product", "Global Debt Plan", "General Trade Policy"], 0),
@@ -730,16 +731,52 @@ def get_game_over_message(mode):
 
 last_pack = None
 
+def choose_article(revive_packs):
+    font_title = pygame.font.SysFont("Arial", 42)
+    font_option = pygame.font.SysFont("Arial", 34)
+    clock = pygame.time.Clock()
+
+    selected_pack = None
+
+    while selected_pack is None:
+        clock.tick(60)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return None
+
+            if event.type == pygame.KEYDOWN:
+                if pygame.K_1 <= event.key <= pygame.K_9:
+                    index = event.key - pygame.K_1
+                    if index < len(revive_packs):
+                        selected_pack = revive_packs[index]
+
+        WIN.fill((40,40,40))
+
+        title = font_title.render("Wähle den Text, den du lesen möchtest:", True, (255,255,255))
+        WIN.blit(title, (WIDTH//2 - title.get_width()//2, 200))
+
+        for i, pack in enumerate(revive_packs):
+            option_text = f"{i+1}. {pack['title']}"
+            surf = font_option.render(option_text, True, (200,200,200))
+            WIN.blit(surf, (WIDTH//2 - surf.get_width()//2, 320 + i*60))
+
+        hint = font_option.render("Drücke die jeweilige Zahl zum Auswählen", True, (255,255,0))
+        WIN.blit(hint, (WIDTH//2 - hint.get_width()//2, HEIGHT - 200))
+
+        pygame.display.update()
+
+    return selected_pack
+
 def revive_player(max_health, revive_packs, mode):
     global last_pack
 
     messages = get_death_messages(mode)
     show_messages_typewriter(messages, letter_delay=50)
 
-    available = [p for p in revive_packs if p != last_pack]
-    chosen_pack = random.choice(available)
+    chosen_pack = choose_article(revive_packs)
     last_pack = chosen_pack
-
     show_pdf(chosen_pack["pdf"])
 
     questions_pool = chosen_pack["questions"]
@@ -756,7 +793,7 @@ def revive_player(max_health, revive_packs, mode):
 def show_game_over_screen(mode):
     WIN.blit(BG, (0,0))
     WIN.blit(TRUMP_IDLE, (WIDTH//2,100))
-    dead_img_rect = PLAYER_DEAD.get_rect(midbottom=(WIDTH//2, HEIGHT//2 + 500))
+    dead_img_rect = PLAYER_DEAD.get_rect(midbottom=(WIDTH//2, GAME_BOTTOM_2))
     WIN.blit(PLAYER_DEAD, dead_img_rect.topleft)
 
     msg = get_game_over_message(mode)
