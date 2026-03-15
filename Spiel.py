@@ -206,8 +206,8 @@ MODE1_REVIVES = [
 
 MODE2_REVIVES = [
     {
-        "title": "title1",
-        "pdf": "pdf-sample_1.pdf",
+        "title": "Freier Welthandel als Chance",
+        "pdf": "Freier Welthandel als Chance.pdf",
         "questions": [
             ("What is export?", ["Sell abroad", "Buy abroad", "Tax goods"], 0),
             ("Exports increase GDP?", ["Yes", "No", "Only locally"], 0),
@@ -216,15 +216,25 @@ MODE2_REVIVES = [
         ]
     },
     {
-        "title": "title2",
-        "pdf": "pdf-sample_1.pdf",
+        "title": "Reportage & Nachteile",
+        "pdf": "Reportage & Nachteile.pdf",
         "questions": [
-            ("What does GDP stand for?", ["Gross Domestic Product", "Global Debt Plan", "General Trade Policy"], 0),
-            ("GDP measures?", ["Economic output", "Population", "Inflation only"], 0),
+            ("What is export?", ["Sell abroad", "Buy abroad", "Tax goods"], 0),
+            ("Exports increase GDP?", ["Yes", "No", "Only locally"], 0),
             ("how old am i?", ["18", "19", "17"], 2),
             ("how old is Tiny?", ["3", "4", "5"], 1)
         ]
-    }
+    },
+    {
+        "title": "Vorteile & Bewertung",
+        "pdf": "Vorteile & Bewertung.pdf",
+        "questions": [
+            ("What is export?", ["Sell abroad", "Buy abroad", "Tax goods"], 0),
+            ("Exports increase GDP?", ["Yes", "No", "Only locally"], 0),
+            ("how old am i?", ["18", "19", "17"], 2),
+            ("how old is Tiny?", ["3", "4", "5"], 1)
+        ]
+    },
 ]
 
 # --------------------------------------
