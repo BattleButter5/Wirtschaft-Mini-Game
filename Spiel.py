@@ -229,10 +229,50 @@ MODE2_REVIVES = [
         "title": "Vorteile & Bewertung",
         "pdf": "Vorteile & Bewertung.pdf",
         "questions": [
-            ("What is export?", ["Sell abroad", "Buy abroad", "Tax goods"], 0),
-            ("Exports increase GDP?", ["Yes", "No", "Only locally"], 0),
-            ("how old am i?", ["18", "19", "17"], 2),
-            ("how old is Tiny?", ["3", "4", "5"], 1)
+            ("Warum werden Regionen wie Südostasien oder Südamerika im Text erwähnt?",
+            ["Um zu zeigen, dass deutsche Unternehmen ihre Produkte zunehmend auch in neuen Wachstumsmärkten anbieten können.",
+            "Um zu verdeutlichen, dass traditionelle Märkte für deutsche Unternehmen an Bedeutung verlieren.",
+            "Um zu erklären, warum deutsche Unternehmen ihre Produktion dorthin verlagern."],0),
+
+            ("Welche Aussage beschreibt die Funktion internationaler Kooperation im Innovationsprozess am genauesten?",
+             ["Internationale Kooperation ersetzt nationale Forschung weitgehend.",
+              "Internationale Kooperation ermöglicht den Austausch von Kompetenzen und stärkt technologische Entwicklung.",
+              "Internationale Kooperation dient hauptsächlich dazu, Produktionskosten zu senken."], 1),
+
+            ("Wie viel investierte die Bosch Gruppe laut Geschäftsbericht 2024 in Forschung und Entwicklung?",
+             ["2,1 Milliarden Euro",
+              "6,3 Milliarden Euro",
+              "10 Milliarden Euro"], 1),
+
+            ("In wie vielen Ländern werden SAP-Softwarelösungen ungefähr genutzt?",
+             ["In über 50 Ländern",
+              "In über 120 Ländern",
+              "In über 180 Ländern"], 2),
+
+            ("Welche Rolle spielen offene Handelsbeziehungen für deutsche Unternehmen laut Text?",
+             ["Sie ermöglichen den Zugang zu neuen internationalen Märkten",
+              "Sie reduzieren den Wettbewerb zwischen Unternehmen",
+              "Sie verhindern die Zusammenarbeit mit anderen Ländern"], 0),
+
+            ("Warum stärkt die Teilnahme an globalen Wertschöpfungsketten laut Text die Wettbewerbsfähigkeit deutscher Unternehmen?",
+             ["Weil sie Unternehmen dazu zwingt, effizienter zu arbeiten und internationale Standards einzuhalten",
+              "Weil Unternehmen dadurch weniger Konkurrenz haben",
+              "Weil dadurch nationale Märkte vor ausländischer Konkurrenz geschützt werden"], 0),
+
+            ("Welche Kombination wird laut Text als ideal für funktionierenden Welthandel genannt?",
+             ["Offene Märkte, faire Regeln, stabile Lieferketten und Nachhaltigkeit",
+              "Protektionismus, kurzfristige Handelskonflikte und niedrige Standards",
+              "Nur Kostensenkung und Auslagerung der Produktion"], 0),
+
+            ("Welches Risiko wird im Text besonders im Zusammenhang mit internationalen Lieferketten hervorgehoben?",
+             ["Mangelnde Nachfrage im Inland",
+              "Innovationsdruck innerhalb des eigenen Unternehmens",
+              "Abhängigkeit von globalen Märkten, die durch Handelskonflikte Arbeitsplätze gefährden können"], 2),
+
+            ("Warum wird die WTO im Text erwähnt?",
+             ["Sie reduziert die Innovationskraft deutscher Unternehmen",
+              "Sie schafft transparente Regeln, die Planungssicherheit und faire Wettbewerbsbedingungen ermöglichen",
+              "Sie verbietet Kooperationen zwischen Ländern"], 1),
         ]
     },
 ]
