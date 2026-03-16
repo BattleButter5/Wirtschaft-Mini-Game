@@ -209,20 +209,114 @@ MODE2_REVIVES = [
         "title": "Freier Welthandel als Chance",
         "pdf": "Freier Welthandel als Chance.pdf",
         "questions": [
-            ("What is export?", ["Sell abroad", "Buy abroad", "Tax goods"], 0),
-            ("Exports increase GDP?", ["Yes", "No", "Only locally"], 0),
-            ("how old am i?", ["18", "19", "17"], 2),
-            ("how old is Tiny?", ["3", "4", "5"], 1)
+            ("Welche Vorteile hat ein funktionierender internationaler Warenhandel für deutsche Unternehmen?",
+             ["Leichter Zugang zu Absatzmärkten, niedrigere Kosten und Planbarkeit bei Investitionen",
+              "Geringere Exportzahlen und weniger Wettbewerb",
+              "Ausschließlich nationale Marktabsicherung"], 0),
+
+            ("Welche Organisation überwacht internationale Handelsregeln laut Text?",
+             ["WTO",
+              "IWF",
+              "OECD"], 0),
+
+            ("Welche Länder sind besonders wichtige Handelspartner Deutschlands?",
+             ["Russland, Indien und Brasilien",
+              "Kanada, Australien und Südafrika",
+              "EU-Partner, USA und China"], 2),
+
+            ("Wie hoch war der Außenhandelsüberschuss Deutschlands 2024?",
+             ["50 Milliarden Euro",
+              "Über 200 Milliarden Euro",
+              "500 Milliarden Euro"], 1),
+
+            ("Welche Aussage verdeutlicht Deutschlands Stellung im globalen Handel?",
+             ["Deutschland exportiert hauptsächlich billige Konsumgüter",
+              "Deutschland ist regionaler Exporteur innerhalb der EU",
+              "Deutschland ist Exportweltmeister mit stark ausgeprägtem Außenhandel"], 2),
+
+            ("Welche Risiken bestehen trotz freiem Handel laut Text?",
+             ["Keine Risiken – Handel ist vollkommen stabil",
+              "Politische Spannungen und neue Zölle, zB. von den USA auf europäische Produkte",
+              "Schwankende Produktionskosten in Deutschland"], 1),
+
+            ("Wie hoch lag die Außenhandelsquote Deutschlands im Jahr 2022?",
+             ["79,9%",
+              "60,3%",
+              "33,5%"], 0),
+
+            ("Welche Produkte sollen laut neuem Handelsrahmenabkommen zwischen EU und USA zollfrei gehandelt werden?",
+             ["Strategisch wichtige Produkte wie Flugzeugteile, bestimmte Chemikalien oder Rohstoffe",
+              "Alle Konsumgüter",
+              "Nur Textilien"], 0),
+
+            ("Welche Auswirkungen haben protektionistische Maßnahmen der USA Anfang 2026?",
+             ["Sie reduzieren ausschließlich die Exporte innerhalb der EU",
+              "Neue Importzölle sorgen für Unsicherheiten im transatlantischen Handel und verzögern Handelsabkommen",
+              "Sie verbessern die Planbarkeit deutscher Unternehmen"], 1),
+
+            ("Welche Produkte exportiert Deutschland laut Text besonders häufig?",
+             ["Nur Fahrzeuge",
+              "Lebensmittel, Kleidung und Möbel",
+              "Maschinen, Fahrzeuge, chemische Erzeugnisse und Elektronik"], 2),
+
         ]
     },
     {
         "title": "Reportage & Nachteile",
         "pdf": "Reportage & Nachteile.pdf",
         "questions": [
-            ("What is export?", ["Sell abroad", "Buy abroad", "Tax goods"], 0),
-            ("Exports increase GDP?", ["Yes", "No", "Only locally"], 0),
-            ("how old am i?", ["18", "19", "17"], 2),
-            ("how old is Tiny?", ["3", "4", "5"], 1)
+            ("Warum ist die Fahrzeugentwicklung bei Porsche bereits ein globales Projekt, obwohl das Zentrum in Deutschland liegt?",
+             ["Weil elektronische Komponenten, Metalle und Software oft aus internationalen Kooperationen stammen",
+              "Weil ein Großteil der Produktion in Asien stattfindet",
+              "Weil deutsche Ingenieure ausschließlich auf importierte Bauteile angewiesen sind"], 0),
+
+            ("Welche Aussage beschreibt die Rolle internationaler Zulieferer in der Produktion am besten?",
+             ["Sie dienen dazu, Kosten zu senken und Lieferzeiten zu verlängern",
+              "Sie ersetzen die Entwicklungsarbeit in Deutschland",
+              "Sie liefern hochwertige Bauteile, die Effizienz und Wettbewerbsfähigkeit der Produktion erhöhen"], 2),
+
+            ("Welche Aussage beschreibt die Bedeutung der internationalen Nachfrage für deutsche Automobilhersteller korrekt?",
+             ["Ohne weltweite Nachfrage wären Produktionszahlen und Arbeitsplätze deutlich geringer",
+              "Nachfrage im Inland ist entscheidend, internationale Märkte spielen nur eine untergeordnete Rolle",
+              "Internationale Nachfrage wirkt sich nur auf die Innovationskraft aus, nicht auf Produktion oder Beschäftigung"], 0),
+
+            ("Welche Verbindung zwischen nationaler Entwicklung und globalem Handel wird im Text exemplarisch gezeigt?",
+             ["Entwicklung erfolgt national, Produktion und Verkauf international, ohne dass offene Märkte eine Rolle spielen",
+              "Entwicklung, Produktion, Lieferketten und Absatzmärkte sind über mehrere Kontinente vernetzt",
+              "Globale Handelswege sind nur für Marketing und Exportstatistiken relevant"], 1),
+
+            ("Wie hängen offene Handelswege laut Text mit Produktionskosten und Effizienz zusammen?",
+             ["Schnelle, zollfreie Lieferungen von Materialien ermöglichen kostengünstige und effiziente Produktion",
+              "Offene Handelswege erhöhen die Produktionskosten durch zusätzlichen Wettbewerb",
+              "Effizienz hängt von nationalen Produktionsverfahren ab, nicht von Handelswegen"], 0),
+
+            ("Wie viel betrug 2024 der Wert der deutschen Exporte nach Angaben des statistischen Bundesamts?",
+             ["Rund 2,5 Billionen Euro",
+              "Rund 1,56 Billionen Euro",
+              "Rund 1,2 Billionen Euro"], 1),
+
+            ("Welche Länder werden als Konkurrenten deutscher Automobilhersteller genannt?",
+             ["Russland, Indien und Brasilien",
+              "Frankreich, Spanien und Italien",
+              "China, Südkorea und die USA"], 2),
+
+            ("Welche Länder werden als Konkurrenten deutscher Automobilhersteller genannt?",
+             ["Russland, Indien und Brasilien",
+              "Frankreich, Spanien und Italien",
+              "China, Südkorea und die USA"], 2),
+
+            ("Warum stehen kleinere Unternehmen oder bestimmte Branchen stärker unter Druck?",
+             ["Weil sie weniger Produkte exportieren",
+              "Weil sie Kosten für Produktionsverlagerung oder Automatisierung oft nicht tragen können",
+              "Weil sie keine internationalen Lieferketten nutzen"], 1),
+
+            ("Welche Zahlen verdeutlichen die Volatilität internationaler Nachfrage?",
+             ["Exporte in die USA gingen im ersten Halbjahr 2025 um ca. 3,9 % zurück, Importe aus China stiegen um 10,7 %",
+              "Exporte nach Europa stiegen um 20 %, während US-Märkte stabil blieben",
+              "Exporte und Importe änderten sich nicht"], 0),
+
+
+
         ]
     },
     {
