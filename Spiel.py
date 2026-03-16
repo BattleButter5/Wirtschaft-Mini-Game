@@ -183,11 +183,103 @@ requested_crate = 0
 # ------------------------------------------
 MODE1_REVIVES = [
     {
-        "title": "title1",
+        "title": "Zölle & Einleitung",
+        "pdf": "Zölle & Einleitung.pdf",
+        "questions": [
+            ("Was passiert mit importierten Waren, wenn ein Staat Zölle erhebt?",
+             ["Sie werden günstiger",
+              "Sie werden teurer",
+              "Sie verschwinden komplett vom Markt"], 1),
+
+            (" Warum können Zölle Arbeitsplätze im Inland schützen?",
+             ["Weil ausländische Produkte teurer werden und heimische Unternehmen mehr verkaufen können",
+              "Weil alle Produkte im Ausland hergestellt werden",
+              "Weil Unternehmen keine Mitarbeiter mehr brauchen"], 0),
+
+            ("Neben wirtschaftlichen Gründen können Zölle auch wofür eingesetzt werden?",
+             ["Als politisches Druckmittel",
+              "Nur zur Unterhaltung",
+              "Nur für den Tourismus"], 0),
+
+            ("Warum können Produkte für Verbraucher teurer werden, wenn der Welthandel eingeschränkt wird?",
+             ["Weil mehr Waren importiert werden",
+              "Weil weniger Waren aus dem Ausland verfügbar sind",
+              "Weil Unternehmen keine Gewinne mehr machen"], 1),
+
+            ("Welche Branche in Deutschland ist besonders vom Export abhängig?",
+             ["Bauindustrie",
+              "Tourismus",
+              "Automobilindustrie"], 2),
+
+            ("Was kann passieren, wenn Unternehmen Probleme mit internationalen Lieferketten haben?",
+             ["Produkte werden schneller hergestellt",
+              "Produktionskosten steigen",
+              "Unternehmen brauchen keine Rohstoffe mehr"], 1),
+
+            ("Welche Beispiele für Handelshemmnisse werden im Text genannt?",
+             ["Zölle, Quoten und technische Vorschriften",
+              "Steuersenkungen und Subventionen",
+              "Neue Produktionsmethoden"], 0),
+
+            ("Welche Aussage über Arbeitsplätze in Deutschland wird im Text genannt?",
+             ["Nur Industriearbeitsplätze hängen vom Export ab",
+              "Jeder zweite Arbeitsplatz hängt vom Export ab",
+              "Gut jeder vierte Arbeitsplatz hängt direkt oder indirekt vom Export ab"], 2 ),
+        ]
+    },
+    {
+        "title": "Aktuelle Situation & Deutschland Exportnation",
+        "pdf": "Aktuelle Situation & Deutschland Exportnation.pdf",
+        "questions": [
+            ("Was symbolisiert die Mauer mit der Aufschrift „Importzölle“ in der Karikatur?",
+             ["Handelsbarrieren, die den Zugang zum US-Markt erschweren",
+              "Militärische Verteidigung der USA",
+              "Neue Produktionsstandorte in den USA"], 0),
+
+            ("Wie hoch war der Wert der deutschen Exporte in die USA im Jahr 2025 laut Text?",
+             ["80 Milliarden Euro",
+              "146,2 Milliarden Euro",
+              "300 Milliarden Euro"], 1),
+
+            ("Warum bezeichnet der IfW-Forscher Julian Hinz die Zölle als „Eigentor“?",
+             ["Weil der Großteil der Preisbelastung durch die Zölle in den USA selbst entsteht",
+              "Weil sie ausschließlich ausländische Unternehmen treffen",
+              "Weil sie nur europäische Exporte betreffen"], 0),
+
+            ("Warum reagiert China in der Karikatur anders als Deutschland auf die US-Zölle?",
+             ["China ist nicht vom Welthandel abhängig",
+              "China exportiert ausschließlich in die USA",
+              "China kann seine Produkte stärker in andere Märkte umleiten"], 2),
+
+            ("Welche Rolle spielen die ASEAN-Staaten im chinesischen Außenhandel laut Text?",
+             ["Sie sind ein wachsender Absatzmarkt für chinesische Exporte",
+              "Sie blockieren den Handel mit China",
+              "Sie sind ausschließlich Rohstofflieferanten"], 0),
+
+            ("Auf welchem Platz steht Deutschland laut Statista unter den weltweit führenden Exportnationen?",
+             ["Platz 5",
+              "Platz 3",
+              "Platz 1"], 1),
+
+            ("Wie viele Warengruppen werden ungefähr aus Deutschland exportiert?",
+             ["Etwa 50",
+              "Über 500",
+              "Etwa 180"], 2),
+
+            ("Wie viele Warengruppen werden ungefähr aus Deutschland exportiert?",
+             ["Etwa 50",
+              "Über 500",
+              "Etwa 180"], 2),
+
+
+        ]
+    },
+    {
+        "title": "title2",
         "pdf": "pdf-sample_0.pdf",
         "questions": [
-            ("What is a tariff?", ["A tax", "A trade agreement", "A subsidy"], 0),
-            ("Who sets tariffs?", ["Government", "Banks", "Companies"], 0),
+            ("What is a trade war?", ["Mutual tariffs", "Currency union", "Free trade"], 0),
+            ("Do trade wars increase prices?", ["Yes", "No", "Never"], 0),
             ("how old am i?", ["18", "19", "17"], 2),
             ("how old is Tiny?", ["3", "4", "5"], 1)
         ]
