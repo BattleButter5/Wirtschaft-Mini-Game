@@ -228,6 +228,51 @@ MODE1_REVIVES = [
         ]
     },
     {
+        "title": "Trumps Zollpolitik",
+        "pdf": "Trump Zollpolitik Laurin Neidhard.pdf.pdf",
+        "questions": [
+            ("Unter welchem Motto verfolgt Donald Trump seine Handelspolitik?",
+             ["Global First",
+              "America First",
+              "Export First"], 1),
+
+            ("Was sind IEEPA-Zölle?",
+             ["Importzölle, die auf Grundlage eines Notstandsgesetzes der USA eingeführt wurden",
+              "EU-Zölle auf amerikanische Produkte",
+              "Strafzölle der WTO"], 0),
+
+            ("Warum wurden IEEPA-Zölle vom Supreme Court im Februar 2026 aufgehoben?",
+             ["Sie waren zu niedrig",
+              "Sie betrafen ausschließlich China",
+              "Es lag keine wirtschaftliche Notlage vor"], 2),
+
+            ("Welche gesetzliche Grundlage nutzte Trump nach der Aufhebung der IEEPA-Zölle?",
+             ["Section 122 des International Trade Act",
+              "WTO-Handelsrichtlinien",
+              "NAFTA-Abkommen"], 0),
+
+            ("Warum erhöhen die Zölle auf Stahl und Aluminium die Produktionskosten amerikanischer Unternehmen?",
+             ["Weil die Rohstoffe im Inland billiger werden",
+              "Weil die Zölle automatisch an die Verbraucher weitergegeben werden",
+              "Weil viele Unternehmen diese Rohstoffe für eigene Produkte benötigen"], 2),
+
+            ("Warum müssen Unternehmen den handelspolitischen Ursprung ihrer Produkte bestimmen?",
+             ["Um zu wissen, welche Marketingstrategie gilt",
+              "Um die Höhe der Zölle korrekt zu berechnen",
+              "Um das Produkt im EU-Markt verkaufen zu dürfen"], 1),
+
+            ("Welche Herausforderung entsteht für Unternehmen durch komplexe Lieferketten bei der Bestimmung des Zollsatzes?",
+             ["Sie müssen nur die Materialkosten berechnen",
+              "Sie müssen genau feststellen, welcher Anteil des Produkts wo produziert wurde",
+              "Sie müssen keine Angaben zur Herkunft machen"], 1),
+
+            ("Warum sind Strafzölle gegen China laut Interview besonders problematisch?",
+             ["Sie führen zu höheren Preisen für amerikanische Verbraucher und erhöhen globale Spannungen",
+              "Sie betreffen ausschließlich die Stahlindustrie",
+              "Sie werden automatisch von der EU übernommen"], 0 ),
+        ]
+    },
+    {
         "title": "Aktuelle Situation & Deutschland Exportnation",
         "pdf": "Aktuelle Situation & Deutschland Exportnation.pdf",
         "questions": [
@@ -287,11 +332,6 @@ MODE1_REVIVES = [
              ["Internationale Handelsabkommen zu verhandeln",
               "Unternehmen Schulungen und Beratung im Bereich Außenwirtschaft anzubieten",
               "Exportsteuern zu berechnen"], 1),
-
-            ("Was sind IEEPA-Zölle?",
-             ["Importzölle, die auf Grundlage eines Notstandsgesetzes der USA eingeführt wurden",
-              "EU-Zölle auf amerikanische Produkte",
-              "Strafzölle der WTO"], 0),
 
             ("Warum ist Trumps Zollpolitik für Unternehmen besonders schwer zu kalkulieren?",
              ["Weil nur wenige Informationen veröffentlicht werden",
