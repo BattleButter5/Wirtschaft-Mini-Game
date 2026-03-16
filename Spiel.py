@@ -817,10 +817,10 @@ def ask_trivia(questions):
 
         if selected == correct_index:
             correct += 1
-            feedback_text = "Correct!"
+            feedback_text = "Richtig!"
             feedback_color = (0, 255, 0)
         else:
-            feedback_text = f"Wrong! Correct answer: {options[correct_index]}"
+            feedback_text = f"Falsch!  Correct answer:  {options[correct_index]}"
             feedback_color = (255, 0, 0)
 
         feedback_surf = font_options.render(feedback_text, True, feedback_color)
