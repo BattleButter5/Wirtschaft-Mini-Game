@@ -275,25 +275,91 @@ MODE1_REVIVES = [
         ]
     },
     {
-        "title": "title2",
-        "pdf": "pdf-sample_0.pdf",
+        "title": "Interview Frau Refardt",
+        "pdf": "Interview Frau Refardt Zusammenfassung.pdf",
         "questions": [
-            ("What is a trade war?", ["Mutual tariffs", "Currency union", "Free trade"], 0),
-            ("Do trade wars increase prices?", ["Yes", "No", "Never"], 0),
-            ("how old am i?", ["18", "19", "17"], 2),
-            ("how old is Tiny?", ["3", "4", "5"], 1)
+            ("Bei welcher Organisation arbeitet Meike Refardt?",
+             ["Bundesministerium für Wirtschaft",
+              "Industrie- und Handelskammer Stuttgart",
+              "Europäische Kommission"], 1),
+
+            ("Was ist die Hauptaufgabe der Exportakademie der IHK?",
+             ["Internationale Handelsabkommen zu verhandeln",
+              "Unternehmen Schulungen und Beratung im Bereich Außenwirtschaft anzubieten",
+              "Exportsteuern zu berechnen"], 1),
+
+            ("Was sind IEEPA-Zölle?",
+             ["Importzölle, die auf Grundlage eines Notstandsgesetzes der USA eingeführt wurden",
+              "EU-Zölle auf amerikanische Produkte",
+              "Strafzölle der WTO"], 0),
+
+            ("Warum ist Trumps Zollpolitik für Unternehmen besonders schwer zu kalkulieren?",
+             ["Weil nur wenige Informationen veröffentlicht werden",
+              "Weil Unternehmen keine Zolltarifnummern verwenden müssen",
+              "Weil mehrere verschiedene Zölle gleichzeitig gelten und sich addieren können"], 2),
+
+            ("Warum können hohe Zölle zu Liquiditätsproblemen führen?",
+             ["Weil Unternehmen die Zölle sofort beim Import bezahlen müssen",
+              "Weil Banken keine Kredite mehr vergeben",
+              "Weil Waren automatisch zerstört werden"], 0),
+
+            ("Welche zwei wichtigen Grundlagen bestimmen den Zollsatz eines Produkts?",
+             ["Produktionsmenge und Gewinn",
+              "Ursprungsland und Zolltarifnummer",
+              "Unternehmensgröße und Mitarbeiterzahl"], 1),
+
+            ("Warum haben große Unternehmen oft Vorteile im Umgang mit neuen Zöllen?",
+             ["Sie müssen keine Zölle bezahlen",
+              "Sie exportieren weniger Produkte",
+              "Sie haben mehr finanzielle und personelle Ressourcen zur Anpassung"], 2)
         ]
     },
     {
-        "title": "title2",
-        "pdf": "pdf-sample_0.pdf",
+        "title": "Auswirkungen für Mercedes",
+        "pdf": "Auswirkungen auf das Unternehmen Mercedes Benz.pdf",
         "questions": [
-            ("What is a trade war?", ["Mutual tariffs", "Currency union", "Free trade"], 0),
-            ("Do trade wars increase prices?", ["Yes", "No", "Never"], 0),
-            ("how old am i?", ["18", "19", "17"], 2),
-            ("how old is Tiny?", ["3", "4", "5"], 1)
+            ("Wer gilt als Mitbegründer des Automobils im Jahr 1886?",
+             ["Henry Ford",
+              "Gottlieb Daimler und Carl Benz",
+              " Ferdinand Porsche"], 1),
+
+            ("Wie viele Fahrzeuge verkaufte Mercedes-Benz im Jahr 2025 ungefähr?",
+             ["2,16 Millionen",
+              "500.000",
+              "5 Millionen"], 0),
+
+            ("Wie heißt der aktuelle Vorstandsvorsitzende von Mercedes-Benz?",
+             ["Herbert Diess",
+              "Tim Cook",
+              "Ola Källenius"], 2),
+
+            ("In welchem US-Bundesstaat befindet sich ein großes Mercedes-Werk?",
+             ["Texas",
+              "Alabama",
+              "Florida"], 1),
+
+            ("Warum führte die US-Regierung neue Zölle auf Autos ein?",
+             ["Um die eigene Produktion zu stärken",
+              "Um den Tourismus zu steigern",
+              "Um Elektroautos zu fördern"], 0),
+
+            ("Warum kann Mercedes seine Produktionsstandorte nicht schnell ändern?",
+             ["Wegen zu wenig Mitarbeitern",
+              "Wegen fehlender Maschinen",
+              "Wegen der langen Produktzyklen"], 2),
+
+            ("Wie hoch sind die neuen US-Zölle auf Autos aus der EU seit 2025?",
+             ["5 %",
+              "10 %",
+              "15 %"], 2),
+
+            ("Wofür setzt sich Mercedes-Benz laut Interview weiterhin ein?",
+             ["Höhere Zölle",
+              "Freien und fairen Handel",
+              "Weniger internationale Märkte"], 1)
         ]
     }
+
 ]
 
 MODE2_REVIVES = [
