@@ -64,7 +64,7 @@ BG_2 = pygame.transform.scale(pygame.image.load(resource_path("BG_6.png")), (WID
 LIEFERENGPASS_IMG = pygame.image.load(resource_path("Lieferengpass.png")).convert_alpha()
 EXPORT_TARGET_IMG = pygame.transform.scale(
     pygame.image.load(resource_path("Customer.png")).convert_alpha(),
-    (220, 80)
+    (WIDTH // 9, 80)
 )
 FLAG_SMALL = pygame.transform.scale(
     pygame.image.load(resource_path("flag_2.png")).convert_alpha(),
