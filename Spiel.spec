@@ -11,6 +11,7 @@ a = Analysis(
         ('Lieferengpass.png', '.'),
         ('Flag.png', '.'),
 	('flag_2.png', '.'),
+	('Customer.png', '.'),
         ('tariff_light_red.png', '.'),
         ('tariff_dark_red.png', '.'),
         ('tariff_orange.png', '.'),

@@ -68,7 +68,7 @@ EXPORT_TARGET_IMG = pygame.transform.scale(
 )
 FLAG_SMALL = pygame.transform.scale(
     pygame.image.load(resource_path("flag_2.png")).convert_alpha(),
-    (50, 30)
+    (50, 40)
 )
 HIGHSCORE_FILE = get_writable_path("highscores.json")   # will be created in the same folder as the exe
 
@@ -1369,7 +1369,7 @@ class ExportTarget:
     def draw(self, surface):
         surface.blit(self.image, self.rect)
         flag_x = self.rect.right - FLAG_SMALL.get_width() - 8
-        flag_y = self.rect.y - 10
+        flag_y = self.rect.y - 14
         crate_img = CRATE_IMAGES[self.requested_type]
         icon_rect = crate_img.get_rect(
             midbottom=(self.rect.centerx, max(self.rect.top - 5, UI_HEIGHT + crate_img.get_height()))
