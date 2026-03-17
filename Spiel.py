@@ -63,8 +63,12 @@ BG = pygame.transform.scale(pygame.image.load(resource_path("bg1.png")), (WIDTH,
 BG_2 = pygame.transform.scale(pygame.image.load(resource_path("BG_6.png")), (WIDTH, HEIGHT))
 LIEFERENGPASS_IMG = pygame.image.load(resource_path("Lieferengpass.png")).convert_alpha()
 EXPORT_TARGET_IMG = pygame.transform.scale(
-    pygame.image.load(resource_path("Flag.png")).convert_alpha(),
+    pygame.image.load(resource_path("Customer.png")).convert_alpha(),
     (220, 80)
+)
+FLAG_SMALL = pygame.transform.scale(
+    pygame.image.load(resource_path("flag_2.png")).convert_alpha(),
+    (50, 30)
 )
 HIGHSCORE_FILE = get_writable_path("highscores.json")   # will be created in the same folder as the exe
 
@@ -1018,7 +1022,7 @@ def ask_trivia(questions):
             feedback_text = "Richtig!"
             feedback_color = (0, 255, 0)
         else:
-            feedback_text = f"Falsch!  Correct answer:  {options[correct_index]}"
+            feedback_text = f"Falsch!  Richtige Antwort:  {options[correct_index]}"
             feedback_color = (255, 0, 0)
 
         feedback_surf = font_options.render(feedback_text, True, feedback_color)
@@ -1364,11 +1368,14 @@ class ExportTarget:
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
+        flag_x = self.rect.right - FLAG_SMALL.get_width() - 8
+        flag_y = self.rect.y - 10
         crate_img = CRATE_IMAGES[self.requested_type]
         icon_rect = crate_img.get_rect(
             midbottom=(self.rect.centerx, max(self.rect.top - 5, UI_HEIGHT + crate_img.get_height()))
         )
         surface.blit(crate_img, icon_rect)
+        surface.blit(FLAG_SMALL, (flag_x, flag_y))
 
 class BottleneckZone:
     def __init__(self, y_pos):
@@ -1465,6 +1472,8 @@ def run_mode_1(player_speed, tariff_speed):
 
     while True:
         dt = clock.tick(60)
+        fps = int(clock.get_fps())
+        pygame.display.set_caption(f"Tariff Game - FPS: {fps}")
         elapsed_time = time.time() - start_time
         now = pygame.time.get_ticks()
         direction_timer += dt
@@ -1768,6 +1777,8 @@ def run_mode_2(player_speed, tariff_speed):
 
     while True:
         dt = clock.tick(60)
+        fps = int(clock.get_fps())
+        pygame.display.set_caption(f"Tariff Game - FPS: {fps}")
         tariff_count += dt
         bottleneck_timer += dt
         elapsed_time = time.time() - quartal_start_time
